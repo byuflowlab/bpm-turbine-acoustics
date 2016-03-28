@@ -663,21 +663,6 @@ def OASPL(r, theta_e, phi_e, rpm, Len, wind, B, Rhub, rad, c, alpha):
     AdB = np.array([-70.4, -63.4, -56.7, -50.5, -44.7, -39.4, -34.6, -30.2, -26.2, -22.5, -19.1, -16.1, -13.4, -10.9, -8.6, -6.6, -4.8, -3.2, -1.9, -0.8, 0.0, 0.6, 1.0, 1.2, 1.3, 1.2, 1.0, 0.5, -0.1, -1.1, -2.5, -4.3, -6.6, -9.3])
     SPLg = SPLg + AdB
 
-    # Plotting the SPL distribution across the frequency range
-    # plt.figure(1)
-    # # plt.plot(f,TE,'k',label='TE')
-    # # plt.plot(f,TV,'b',label='TV')
-    # # plt.plot(f,BLVS,'g',label='LBLVS')
-    # # plt.plot(f,BVS,'r',label='TEBVS')
-    # plt.semilogx(f,TE,'k',label='TE')
-    # plt.semilogx(f,TV,'b',label='TV')
-    # plt.semilogx(f,BLVS,'g',label='LBLVS')
-    # plt.semilogx(f,BVS,'r',label='TEBVS')
-    # plt.semilogx(f,SPLg,'c',label='OASPL')
-    # plt.xlabel('Hz')
-    # plt.ylabel('SPL')
-    # plt.legend(loc=4)
-
     # Converting to sound pressure (Pa) for incoherent noise addition
     SPLp = refPres * 10**(SPLg / 20)
 
@@ -847,5 +832,3 @@ if __name__ == "__main__":
     db_test = turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, L_test, windvel_test, B_test, h_test, Rhub, rad, c, alpha, 30.781500225299993, 'fortran')
 
     print 'Test SPL: ', db_test
-
-    plt.show()
