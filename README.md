@@ -1,6 +1,7 @@
 # BPM Turbine Acoustics
 
 Turbine acoustic code using the BPM equations developed by Brooks, Pope, and Marcolini
+
 Developed by Eric Tingey at Brigham Young University, 2015
 
 This code models the acoustic propagation of a wind turbine based on turbulent boundary layer edge noise, separation stall noise, tip vortex formation noise, laminar boundary layer vortex shedding noise, and trailing edge bluntness vortex shedding noise. Turbulent inflow noise is not assumed in this current code. The semi-empiracal equations were developed from the NACA 0012 airfoil data and the blade segments used in the test file are based on the NREL 5-MW wind turbine. Scaling of the segments is based on the blade length specified.
