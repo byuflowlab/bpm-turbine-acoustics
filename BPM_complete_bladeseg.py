@@ -1,7 +1,7 @@
 """
 BPM_complete.py
 
-BPM Aeroacoustic Model by Eric Tingey, 2015
+BPM Aeroacoustic Model by Eric Tingey, created in 2015
 Based on acoustic theroy of Brooks, Pope & Marcolini
 
 This code models the acoustic propagation of a wind turbine based on turbulent
@@ -292,7 +292,7 @@ def TBLTE(f, V, L, c, r, theta_e, phi_e, alpha, nu, conv, trip):
     M = V / c0
     Mc = conv * M
     Re = (V * c) / nu
-
+    
     if trip == 'untrip':
         # UNTRIPPED boundary layer at 0 deg- thickness, displacement thickness
         d0 = c * (10**(1.6569 - 0.9045 * log10(Re) + 0.0596 * (log10(Re))**2))
@@ -386,7 +386,7 @@ def TBLTE(f, V, L, c, r, theta_e, phi_e, alpha, nu, conv, trip):
         SPLp = 10 * log10((dp_d * M**5 * L * Dh) / r**2) + Ap + (K1 - 3.0) + DeltaK1
         SPLs = 10 * log10((dp_d * M**5 * L * Dh) / r**2) + As + (K1 - 3.0)
         SPLa = 10 * log10((ds_d * M**5 * L * Dh) / r**2) + B + K2
-
+        
         return 10 * log10(10**(SPLp / 10) + 10**(SPLs / 10) + 10**(SPLa / 10))
 
     else:
@@ -609,7 +609,7 @@ def OASPL(r, theta_e, phi_e, rpm, Len, wind, B, Rhub, rad, c, alpha):
 
     # Parameters of the wind turbine (f,V,L,c,h,alpha,atip)
     omega = (rpm * 2 * pi) / 60  # angular velocity (rad/sec)
-
+    
     L = np.array([])
     V = np.array([])
     for i in range(np.size(rad)-1):
@@ -618,7 +618,7 @@ def OASPL(r, theta_e, phi_e, rpm, Len, wind, B, Rhub, rad, c, alpha):
         vel = sqrt((omega*rad_mid)**2 + wind**2) #wind speed over the blade (m/s)
         L = np.append(L,wide)
         V = np.append(V,vel)
-
+    
     h = 0.01 * c  # trailing edge thickness; 1% of chord length (m)
     atip = alpha[-1]  # angle of attack of the tip region (deg)
     psi = 1.520169109 #solid angle between both airfoil surfaces just upstream of the trailing edge (NACA 0012) (deg)
@@ -645,23 +645,38 @@ def OASPL(r, theta_e, phi_e, rpm, Len, wind, B, Rhub, rad, c, alpha):
             TV_temp[j] = refPres * 10**(TBLTV(f[g],V[j],c[j],r,theta_e,phi_e,atip,conv,tip)/20)
             BLVS_temp[j] = refPres * 10**(LBLVS(f[g],V[j],L[j],c[j],r,theta_e,phi_e,alpha[j],nu,conv)/20)
             BVS_temp[j] = refPres * 10**(TEBVS(f[g],V[j],L[j],c[j],h[j],r,psi,theta_e,phi_e,alpha[j],nu,conv,trip)/20)
-
+        
         # Adding incoherent noises
         TE_t = np.sum(TE_temp)
         TV_t = np.sum(TV_temp)
         BLVS_t = np.sum(BLVS_temp)
         BVS_t = np.sum(BVS_temp)
-
+        
         # Converting to sound pressure levels (SPL) (dB)
         TE[g] = 10 * log10(TE_t / (refPres)**2)
         TV[g] = 10 * log10(TV_t / (refPres)**2)
         BLVS[g] = 10 * log10(BLVS_t / (refPres)**2)
         BVS[g] = 10 * log10(BVS_t / (refPres)**2)
         SPLg[g] = 10 * log10(B*(10**(TE[g] / 10) + 10**(TV[g] / 10) + 10**(BLVS[g] / 10) + 10**(BVS[g] / 10))) # multiplied by number of blades (B)
-
+            
     # A-weighting curve (dBA) for sound perception correction
     AdB = np.array([-70.4, -63.4, -56.7, -50.5, -44.7, -39.4, -34.6, -30.2, -26.2, -22.5, -19.1, -16.1, -13.4, -10.9, -8.6, -6.6, -4.8, -3.2, -1.9, -0.8, 0.0, 0.6, 1.0, 1.2, 1.3, 1.2, 1.0, 0.5, -0.1, -1.1, -2.5, -4.3, -6.6, -9.3])
     SPLg = SPLg + AdB
+    
+    # Plotting the SPL distribution across the frequency range
+    # plt.figure(1)
+    # # plt.plot(f,TE,'k',label='TE')
+    # # plt.plot(f,TV,'b',label='TV')
+    # # plt.plot(f,BLVS,'g',label='LBLVS')
+    # # plt.plot(f,BVS,'r',label='TEBVS')
+    # plt.semilogx(f,TE,'k',label='TE')
+    # plt.semilogx(f,TV,'b',label='TV')
+    # plt.semilogx(f,BLVS,'g',label='LBLVS')
+    # plt.semilogx(f,BVS,'r',label='TEBVS')
+    # plt.semilogx(f,SPLg,'c',label='OASPL')
+    # plt.xlabel('Hz')
+    # plt.ylabel('SPL')
+    # plt.legend(loc=4)
 
     # Converting to sound pressure (Pa) for incoherent noise addition
     SPLp = refPres * 10**(SPLg / 20)
@@ -672,101 +687,84 @@ def OASPL(r, theta_e, phi_e, rpm, Len, wind, B, Rhub, rad, c, alpha):
     return SPLoa
 
 
-def turbinepos(x, y, obs, wind, rpm, L, windvel, B, h, Rhub, rad, c, alpha, corr, py_for):
+def turbinepos(x, y, obs, wind, rpm, L, windvel, B, h, Rhub, rad, c, alpha, corr):
     """
     Placing a turbine in a specified location and finding the OASPL of the turbine with reference to an observer
+    Parameters:
+    x: x locations of each of the turbines (x1,x2,...)
+    y: y locations of each of the turbines (y1,y2,...)
+    obs: the x, y, and z location of an observer
+    wind: the direction of the wind flow in heading degrees (N=0,E=90,S=180,W=270)
+    rpm: rotational speed of each turbine (rpm)
+    L: length of the turbine blade (m)
+    windvel: wind speed at each turbine (m/s)
+    B: number of turbine blades
+    h: height of the turbine tower (m)
+    Rhub: the radial length of the hub section
+    rad: radial positions along on the blade for segment division
+    c: chord lengths at each radial section
+    alpha: angles of attack at each radial section
 
-    Parameters
-    ----------
-    x : array
-        x locations of each of the turbines (x1,x2,...) (m)
-    y : array
-        y locations of each of the turbines (y1,y2,...) (m)
-    obs : array
-        the x, y, and z location of an observer (m)
-    wind : float
-        the direction of the wind flow in heading degrees (N=0,E=90,S=180,W=270)
-    rpm : array
-        rotational speed of each turbine (rpm)
-    L : array
-        length of the turbine blade (m)
-    windvel : array
-        wind speed at each turbine (m/s)
-    B : float
-        number of turbine blades
-    h : float
-        height of the turbine tower (m)
-    Rhub : float
-        the radial length of the hub section
-    rad : array
-        radial positions along on the blade for segment division (m)
-    c : array
-        chord lengths at each radial section (m)
-    alpha : array
-        angles of attack at each radial section (rad)
-    corr : float
-        SPL correction factor (dB)
-    py_for : string
-        specifying to use the Python ('python') or Fortran ('fortran') code
-
-    Returns
-    ----------
-    turbinenoise : float
-        the SPL at a specified observer location from all the turbines (dB)
+    Returns:
+    turbinenoise: the SPL at a specified observer location from all the turbines (dB)
     """
-    if py_for == 'python':
-        n = int(np.size(x))
+    # Change to Fortran run
+    """
+    n = int(np.size(x))
 
-        r = np.linspace(0, 0, n)
-        theta_e = np.linspace(0, 0, n)
-        phi_e = np.linspace(0, 0, n)
-        t = np.linspace(0, 0, n)
-        windrad = np.radians(wind)
+    r = np.linspace(0, 0, n)
+    theta_e = np.linspace(0, 0, n)
+    phi_e = np.linspace(0, 0, n)
+    t = np.linspace(0, 0, n)
+    windrad = np.radians(wind)
 
-        for i in range(n):
-            r[i] = np.sqrt((obs[0] - x[i])**2 + (obs[1] - y[i])**2 + (obs[2] - h)**2)
+    for i in range(n):
+        r[i] = np.sqrt((obs[0] - x[i])**2 + (obs[1] - y[i])**2 + (obs[2] - h)**2)
 
-            obsi = np.array([0.0, 0.0, 0.0])
-            obsi[0] = obs[0] - x[i]
-            obsi[1] = obs[1] - y[i]
-            obsi[2] = obs[2]
-            xi = 0.0
-            yi = 0.0
+        obsi = np.array([0.0, 0.0, 0.0])
+        obsi[0] = obs[0] - x[i]
+        obsi[1] = obs[1] - y[i]
+        obsi[2] = obs[2]
+        xi = 0.0
+        yi = 0.0
 
-            # Adjusting the coordinates for the wind direction
-            rxy = np.sqrt((obsi[0])**2 + (obsi[1])**2)
-            ang = arctan2(obsi[1], obsi[0]) + windrad
+        # Adjusting the coordinates for the wind direction
+        rxy = np.sqrt((obsi[0])**2 + (obsi[1])**2)
+        ang = arctan2(obsi[1], obsi[0]) + windrad
 
-            obsi[0] = rxy * cos(ang)
-            obsi[1] = rxy * sin(ang)
+        obsi[0] = rxy * cos(ang)
+        obsi[1] = rxy * sin(ang)
 
-            phi_e[i] = fabs(np.degrees(arctan2((obsi[1] - yi), (obsi[0] - xi))))
-            theta_e[i] = np.degrees(arctan2(fabs(h - obsi[2]), fabs(obsi[1] - yi)))
-            if phi_e[i] < 1.0:
-                phi_e[i] = 1.0
-            if phi_e[i] > 179.0:
-                phi_e[i] = 179.0
-            # if phi_e[i] == 0.0 or phi_e[i] == 180.0:
-            #     r[i] = r[i] - 0.2 #directivity adjustment based on work by Luis Vargas (Wind Turbine Noise Prediction)
+        phi_e[i] = fabs(np.degrees(arctan2((obsi[1] - yi), (obsi[0] - xi))))
+        theta_e[i] = np.degrees(arctan2(fabs(h - obsi[2]), fabs(obsi[1] - yi)))
+        if phi_e[i] < 1.0:
+            phi_e[i] = 1.0
+        if phi_e[i] > 179.0:
+            phi_e[i] = 179.0
+        # if phi_e[i] == 0.0 or phi_e[i] == 180.0:
+        #     r[i] = r[i] - 0.2 #directivity adjustment based on work by Luis Vargas (Wind Turbine Noise Prediction)
 
-        # Calculating the OASPL of each of the turbines in a for loop of "n" turbines (SPL function)
-        for j in range(n):
-            t[j] = OASPL(r[j], theta_e[j], phi_e[j], rpm[j], L, windvel[j], B, Rhub, rad, c, alpha)
+    # Calculating the OASPL of each of the turbines in a for loop of "n" turbines (SPL function)
+    for j in range(n):
+        t[j] = OASPL(r[j], theta_e[j], phi_e[j], rpm[j], L, windvel[j], B, Rhub, rad, c, alpha)
 
-        # Calculating the preliminary turbine_noise (10**(t1/10) + 10**(t2/10) + ...)
-        turbine_noise = 10**(t[0] / 10)
-        k = 1
-        for num in range(n - 1):
-            turbine_noise = turbine_noise + 10**(t[k] / 10)
-            k = k + 1
+    # Calculating the preliminary turbine_noise (10**(t1/10) + 10**(t2/10) + ...)
+    turbine_noise = 10**(t[0] / 10)
+    k = 1
+    for num in range(n - 1):
+        turbine_noise = turbine_noise + 10**(t[k] / 10)
+        k = k + 1
 
-        turbnoise = 10 * log10(turbine_noise)
+    turbnoise = 10 * log10(turbine_noise)
 
-        turbinenoise = turbnoise-corr #correction based on Rosiere valdiation (243.84 m, 800 ft should be 47 dB)
+    return turbnoise-33.1910498127 #correction based on Rosiere valdiation (243.84 m, 800 ft should be 47 dB)
+    """
+    # nturb = np.size(x)
+    # nnrel = np.size(rad)
+    # nobs = np.size(obs)
 
-    elif py_for == 'fortran':
-        turbinenoise = _bpmcomplete.turbinepos(x, y, obs, wind, rpm, L, windvel, B, h, rad, c, alpha, corr)
-
+    turbinenoise = _bpmcomplete.turbinepos(x, y, obs, wind, rpm, L, windvel, B, h, rad, c, alpha, corr)
+    
     return turbinenoise
 
 # Running the Code
@@ -785,21 +783,21 @@ if __name__ == "__main__":
     h_test = 25.
     Rhub = 0.8382
     chord_corr = 2.190491
-
+    
     # NREL 5-MW Turbine Specifications
     Rtip_nrel = 63.0
-
+    
     r_nrel = np.array([1.5, 2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333])
     chord_nrel = np.array([3.542, 3.854, 4.167, 4.557, 4.652, 4.458, 4.249, 4.007, 3.748, 3.502, 3.256, 3.010, 2.764, 2.518, 2.313, 2.086, 1.419])
     alpha = np.array([13.308, 13.308, 13.308, 13.308, 11.480, 10.162, 9.011, 7.795, 6.544, 5.361, 4.188, 3.125, 2.319, 1.526, 0.863, 0.370, 0.106])
-
+    
     # Scaling the NREL turbine to the size of the Rosiere turbine
     r_ratio = L_test/Rtip_nrel
     rad = r_nrel*r_ratio
     rad[0] = Rhub
     c = chord_nrel*(r_ratio*chord_corr)
 
-    db_test_ros = turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, L_test, windvel_test, B_test, h_test, Rhub, rad, c, alpha, 30.781500225299993, 'fortran')
+    db_test_ros = turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, L_test, windvel_test, B_test, h_test, Rhub, rad, c, alpha, 30.781500225299993)
 
     print 'Rosiere Validation (47 dB): ', db_test_ros
 
@@ -815,20 +813,22 @@ if __name__ == "__main__":
     h_test = 25. #height of the turbine hub (m)
     Rhub = 0.8382 #radial length of the turbine hub (m)
     chord_corr = 2.190491
-
+    
     # NREL 5-MW Turbine Specifications
     Rtip_nrel = 63.0
-
+    
     r_nrel = np.array([1.5, 2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333])
     chord_nrel = np.array([3.542, 3.854, 4.167, 4.557, 4.652, 4.458, 4.249, 4.007, 3.748, 3.502, 3.256, 3.010, 2.764, 2.518, 2.313, 2.086, 1.419])
     alpha = np.array([13.308, 13.308, 13.308, 13.308, 11.480, 10.162, 9.011, 7.795, 6.544, 5.361, 4.188, 3.125, 2.319, 1.526, 0.863, 0.370, 0.106])
-
+    
     # Scaling the NREL turbine to the size of the specified turbine
     r_ratio = L_test/Rtip_nrel
     rad = r_nrel*r_ratio
     rad[0] = Rhub
     c = chord_nrel*(r_ratio*chord_corr)
 
-    db_test = turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, L_test, windvel_test, B_test, h_test, Rhub, rad, c, alpha, 30.781500225299993, 'fortran')
+    db_test = turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, L_test, windvel_test, B_test, h_test, Rhub, rad, c, alpha, 30.781500225299993)
 
     print 'Test SPL: ', db_test
+
+    plt.show()

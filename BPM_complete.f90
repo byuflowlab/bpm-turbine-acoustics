@@ -869,12 +869,12 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
 end subroutine OASPL
 
 ! Placing a turbine in a specified location and finding the OASPL of the turbine with reference to an observer
-subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,L,windvel,B,h,rad,c,alpha,corr,turbinenoise)
+subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,windvel,B,h,rad,c,alpha,corr,turbinenoise)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
   integer, intent(in) :: nturb,nnrel,nobs
-  real(dp), intent(in) :: wind,L,B,h,corr
+  real(dp), intent(in) :: wind,B,h,corr
   real(dp), dimension(nturb), intent(in) :: x,y,rpm,windvel
   real(dp), dimension(nobs), intent(in) :: obs
   real(dp), dimension(nnrel), intent(in) :: rad
@@ -884,7 +884,7 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,L,windvel,B,h,rad,c,alph
   ! local
   integer :: i,j,k
   real(dp) :: pi,windrad,xi,yi,rxy,ang,turbine_noise,SPLoa,turbnoise
-  real(dp), dimension(nturb) :: r,theta_e,phi_e,t
+  real(dp), dimension(nturb) :: r,theta_e,phi_e,t,theta_er,phi_er
   real(dp), dimension(nobs) :: obsi
   intrinsic sqrt
   intrinsic sin
@@ -914,12 +914,21 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,L,windvel,B,h,rad,c,alph
 
     phi_e(i) = abs((atan2((obsi(2)-yi),(obsi(1)-xi)))*180.0_dp/pi)
     theta_e(i) = (atan2(abs(h-obsi(3)),abs(obsi(2)-yi)))*180.0_dp/pi
-    if (phi_e(i) < 1.0_dp) then
-      phi_e(i) = 1.0_dp
+    if (phi_e(i) < 5.0_dp) then
+      phi_e(i) = (1.0_dp/10.0_dp)*phi_e(i)**2.0_dp + 2.5_dp
     end if
-    if (phi_e(i) > 179.0_dp) then
-      phi_e(i) = 179.0_dp
+    if (phi_e(i) > 175.0_dp) then
+      phi_er(i) = 180.0_dp - phi_e(i)
+      phi_er(i) = (1.0_dp/10.0_dp)*phi_er(i)**2.0_dp + 2.5_dp
+      phi_e(i) = 180.0_dp - phi_er(i)
     end if
+
+    if (theta_e(i) > 85.0_dp) then
+      theta_er(i) = 90.0_dp - theta_e(i)
+      theta_er(i) = (1.0_dp/10.0_dp)*theta_er(i)**2.0_dp + 2.5_dp
+      theta_e(i) = 90.0_dp - theta_er(i)
+    end if
+
     ! if (phi_e(i) == 0.0_dp .or. phi_e(i) == 180.0_dp) then
     !   r(i) = r(i) - 0.2 ! directivity adjustment based on work by Luis Vargas (Wind Turbine Noise Prediction)
     ! end if
