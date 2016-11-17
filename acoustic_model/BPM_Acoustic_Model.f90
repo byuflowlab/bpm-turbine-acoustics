@@ -958,5 +958,5 @@ end subroutine turbinepos
 
 
 ! To build for Python interface:
-! f2py -c  --opt=-O2 -m _bpmcomplete BPM_complete.f90
-! python C:\Python27\Scripts\f2py.py -c --opt=-O2 --compiler=mingw32 --fcompiler=gfortran -m _bpmcomplete BPM_complete.f90
+! f2py -c  --opt=-O2 -m _bpmacoustic BPM_Acoustic_Model.f90
+! python C:\Python27\Scripts\f2py.py -c --opt=-O2 --compiler=mingw32 --fcompiler=gfortran -m _bpmacoustic BPM_Acoustic_Model.f90
