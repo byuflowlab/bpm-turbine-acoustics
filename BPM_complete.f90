@@ -20,8 +20,8 @@ subroutine Dhfunc(theta_e,phi_e,M,Mc,Dh)
   theta = theta_e*pi/180.0_dp
   phi = phi_e*pi/180.0_dp
 
-  Dh = (2.0_dp*(sin(theta/2.0_dp))**2.0_dp*(sin(phi))**2.0_dp)/((1.0_dp&
-  +M*cos(theta))*(1.0_dp+(M-Mc)*cos(theta))**2.0_dp)
+  Dh = (2.0_dp*(sin(theta/2.0_dp))**2*(sin(phi))**2)/((1.0_dp&
+  +M*cos(theta))*(1.0_dp+(M-Mc)*cos(theta))**2)
 
 end subroutine Dhfunc
 
@@ -43,7 +43,7 @@ subroutine Dlfunc(theta_e,phi_e,M,Dl)
   theta = theta_e*pi/180.0_dp
   phi = phi_e*pi/180.0_dp
 
-  Dl = ((sin(theta))**2.0_dp*(sin(phi))**2.0_dp)/(1.0_dp+M*cos(theta))**4.0_dp
+  Dl = ((sin(theta))**2*(sin(phi))**2)/(1.0_dp+M*cos(theta))**4
 
 end subroutine Dlfunc
 
@@ -65,47 +65,47 @@ subroutine Afunc(ain,Re,Aspec)
 
   ! Calculating Amin
   if(a < 0.204_dp) then
-    Amin = sqrt(67.552_dp-886.788_dp*a**2.0_dp)-8.22_dp
+    Amin = sqrt(67.552_dp-886.788_dp*a**2)-8.219_dp
   else if (a >= 0.204_dp .and. a <= 0.244_dp) then
     Amin = -32.665_dp*a+3.981_dp
   else
-    Amin = -142.79_dp*a**3.0_dp+103.656_dp*a**2.0_dp-57.757_dp*a+6.006_dp
+    Amin = -142.795_dp*a**3+103.656_dp*a**2-57.757_dp*a+6.006_dp
   end if
 
   ! Calculating Amax
   if (a < 0.13_dp) then
-    Amax = sqrt(67.552_dp-886.788_dp*a**2.0_dp)-8.219_dp
+    Amax = sqrt(67.552_dp-886.788_dp*a**2)-8.219_dp
   else if(a >= 0.13_dp .and. a <= 0.321_dp) then
     Amax = -15.901_dp*a+1.098_dp
   else
-    Amax = -4.669_dp*a**3.0_dp+3.491_dp*a**2.0_dp-16.699_dp*a+1.149_dp
+    Amax = -4.669_dp*a**3+3.491_dp*a**2-16.699_dp*a+1.149_dp
   end if
 
   ! Calculating a0
   if (Re < 9.52e4_dp) then
     a0 = 0.57_dp
   else if (Re >= 9.52e4_dp .and. Re <= 8.57e5_dp) then
-    a0 = -9.57e-13_dp*(Re-8.57e5_dp)**2.0_dp+1.13_dp
+    a0 = -9.57e-13_dp*(Re-8.57e5_dp)**2+1.13_dp
   else
     a0 = 1.13_dp
   end if
 
   ! Calculating Amin(a0)
   if (a0 < 0.204_dp) then
-    Amin0 = sqrt(67.552_dp-886.788_dp*a0**2.0_dp)-8.22_dp
+    Amin0 = sqrt(67.552_dp-886.788_dp*a0**2)-8.219_dp
   else if (a0 >= 0.204 .and. a0 <= 0.244) then
     Amin0 = -32.665_dp*a0+3.981_dp
   else
-    Amin0 = -142.79_dp*a0**3.0_dp+103.656_dp*a0**2.0_dp-57.757_dp*a0+6.006_dp
+    Amin0 = -142.795_dp*a0**3+103.656_dp*a0**2-57.757_dp*a0+6.006_dp
   end if
 
   ! Calculating Amax(a0)
   if (a0 < 0.13_dp) then
-    Amax0 = sqrt(67.552_dp-886.788_dp*a0**2.0_dp)-8.219_dp
+    Amax0 = sqrt(67.552_dp-886.788_dp*a0**2)-8.219_dp
   else if (a0 >= 0.13_dp .and. a0 <= 0.321_dp) then
-    Amax0 = -15.90_dp*a0+1.098_dp
+    Amax0 = -15.901_dp*a0+1.098_dp
   else
-    Amax0 = -4.669_dp*a0**3.0_dp+3.491_dp*a0**2.0_dp-16.699_dp*a0+1.149_dp
+    Amax0 = -4.669_dp*a0**3+3.491_dp*a0**2-16.699_dp*a0+1.149_dp
   end if
 
   AR = (-20.0_dp-Amin0)/(Amax0-Amin0)
@@ -132,47 +132,47 @@ subroutine Bfunc(bin,Re,Bspec)
 
   ! Calculating Bmin
   if (b < 0.13_dp) then
-    Bmin = sqrt(16.888_dp-886.788_dp*b**2.0_dp)-4.109_dp
+    Bmin = sqrt(16.888_dp-886.788_dp*b**2)-4.109_dp
   else if (b >= 0.13_dp .and. b <= 0.145_dp) then
     Bmin = -83.607_dp*b+8.138_dp
   else
-    Bmin = -817.810_dp*b**3.0_dp+355.210_dp*b**2.0_dp-135.024_dp*b+10.619_dp
+    Bmin = -817.810_dp*b**3+355.210_dp*b**2-135.024_dp*b+10.619_dp
   end if
 
   ! Calculating Bmax
   if (b < 0.10_dp) then
-    Bmax = sqrt(16.888_dp-886.788_dp*b**2.0_dp)-4.109_dp
+    Bmax = sqrt(16.888_dp-886.788_dp*b**2)-4.109_dp
   else if (b >= 0.10_dp .and. b <= 0.187_dp) then
     Bmax = -31.330_dp*b+1.854_dp
   else
-    Bmax = -80.541_dp*b**3.0_dp+44.174_dp*b**2.0_dp-39.381_dp*b+2.344_dp
+    Bmax = -80.541_dp*b**3+44.174_dp*b**2-39.381_dp*b+2.344_dp
   end if
 
   ! Calculating b0
   if (Re < 9.52e4_dp) then
     b0 = 0.30_dp
   else if (Re >= 9.52e4_dp .and. Re <= 8.57e5_dp) then
-    b0 = -4.48e-13_dp*(Re-8.57e5_dp)**2.0_dp+0.56_dp
+    b0 = -4.48e-13_dp*(Re-8.57e5_dp)**2+0.56_dp
   else
     b0 = 0.56_dp
   end if
 
   ! Calculating Bmin(b0)
   if (b0 < 0.13_dp) then
-    Bmin0 = sqrt(16.888_dp - 886.788_dp * b0**2.0_dp) - 4.109_dp
+    Bmin0 = sqrt(16.888_dp-886.788_dp*b0**2)-4.109_dp
   else if (b0 >= 0.13_dp .and. b0 <= 0.145_dp) then
     Bmin0 = -83.607_dp*b0+8.138_dp
   else
-    Bmin0 = -817.810_dp*b0**3.0_dp+355.210_dp*b0**2.0_dp-135.024_dp*b0+10.619_dp
+    Bmin0 = -817.810_dp*b0**3+355.210_dp*b0**2-135.024_dp*b0+10.619_dp
   end if
 
   ! Calculating Bmax(b0)
   if (b0 < 0.10_dp) then
-    Bmax0 = sqrt(16.888_dp-886.788_dp*b**2.0_dp)-4.109_dp
+    Bmax0 = sqrt(16.888_dp-886.788_dp*b0**2)-4.109_dp
   else if (b0 >= 0.10_dp .and. b0 <= 0.187_dp) then
     Bmax0 = -31.330_dp*b+1.854_dp
   else
-    Bmax0 = -80.541_dp*b0**3.0_dp+44.174_dp*b0**2.0_dp-39.381_dp*b0+2.344_dp
+    Bmax0 = -80.541_dp*b0**3+44.174_dp*b0**2-39.381_dp*b0+2.344_dp
   end if
 
   BR = (-20_dp-Bmin0)/(Bmax0-Bmin0)
@@ -197,7 +197,7 @@ subroutine G1func(e,G1)
   else if (e <= 0.8545_dp .and. e > 0.5974_dp) then
     G1 = 98.409_dp*log10(e)+2.0_dp
   else if (e <= 1.17_dp .and. e > 0.8545_dp) then
-    G1 = sqrt(2.484_dp-506.25_dp*(log10(e))**2.0_dp)-5.076_dp
+    G1 = sqrt(2.484_dp-506.25_dp*(log10(e))**2)-5.076_dp
   else if (e <= 1.674_dp .and. e > 1.17_dp) then
     G1 = -98.409_dp*log10(e)+2.0_dp
   else
@@ -221,7 +221,7 @@ subroutine G2func(d,G2)
   else if (d <= 0.5689_dp .and. d > 0.3237_dp) then
     G2 = 65.188_dp*log10(d)+9.125_dp
   else if (d <= 1.7579_dp .and. d > 0.5689_dp) then
-    G2 = -114.052_dp*(log10(d))**2.0_dp
+    G2 = -114.052_dp*(log10(d))**2
   else if (d <= 3.0889_dp .and. d > 1.7579_dp) then
     G2 = -65.188_dp*log10(d)+9.125_dp
   else
@@ -289,7 +289,7 @@ subroutine G5func(hdav,psi,StSt_peak,G5)
     m = 0.0_dp
   else if (hdav <= 0.5_dp .and. hdav > 0.02_dp) then
     m = 68.724_dp*(hdav)-1.35_dp
-  else if (hdav <= 0.62 .and. hdav > 0.5) then
+  else if (hdav <= 0.62_dp .and. hdav > 0.5_dp) then
     m = 308.475_dp*hdav-121.23_dp
   else if (hdav <= 1.15_dp .and. hdav > 0.62_dp) then
     m = 224.811_dp*hdav-69.35_dp
@@ -299,30 +299,30 @@ subroutine G5func(hdav,psi,StSt_peak,G5)
     m = 268.344_dp
   end if
 
-  eta_0 = -sqrt((m**2.0_dp*mu**4.0_dp)/(6.25_dp+m**2.0_dp*mu**2.0_dp))
-  k = 2.5_dp*sqrt(1.0_dp-(eta_0/mu)**2.0_dp)-2.5_dp-m*eta_0
+  eta_0 = -sqrt((m**2*mu**4)/(6.25_dp+m**2*mu**2))
+  k = 2.5_dp*sqrt(1.0_dp-(eta_0/mu)**2)-2.5_dp-m*eta_0
 
   if (eta < eta_0) then
     G14 = m*eta+k
   else if (eta < 0.0_dp .and. eta >= eta_0) then
-    G14 = 2.5_dp*sqrt(1.0_dp-(eta/mu)**2.0_dp)-2.5_dp
+    G14 = 2.5_dp*sqrt(1.0_dp-(eta/mu)**2)-2.5_dp
   else if (eta < 0.03616_dp .and. eta >= 0.0_dp) then
-    G14 = sqrt(1.5625_dp-1194.99_dp*eta**2.0_dp)-1.25_dp
+    G14 = sqrt(1.5625_dp-1194.99_dp*eta**2)-1.25_dp
   else
     G14 = -155.543_dp*eta+4.375_dp
   end if
 
   ! finding G5 at psi = 0 deg
-  hdav_prime = 6.724_dp*hdav**2.0_dp-4.019_dp*hdav+1.107_dp
+  hdav_prime = 6.724_dp*hdav**2-4.019_dp*hdav+1.107_dp
 
   eta0 = log10(StSt_peak)
 
   if (hdav_prime < 0.25_dp) then
     mu0 = 0.1221_dp
   else if (hdav_prime < 0.62_dp .and. hdav_prime >= 0.25_dp) then
-    mu0 = -0.2175_dp*hdav+0.1755_dp
+    mu0 = -0.2175_dp*hdav_prime+0.1755_dp
   else if (hdav_prime < 1.15_dp .and. hdav_prime >= 0.62_dp) then
-    mu0 = -0.308_dp*hdav+0.0596_dp
+    mu0 = -0.308_dp*hdav_prime+0.0596_dp
   else
     mu0 = 0.0242_dp
   end if
@@ -330,7 +330,7 @@ subroutine G5func(hdav,psi,StSt_peak,G5)
   if (hdav_prime <= 0.02_dp) then
     m0 = 0.0_dp
   else if (hdav_prime <= 0.5_dp .and. hdav_prime > 0.02_dp) then
-    m0 = 68.724_dp*(hdav_prime)-1.35_dp
+    m0 = 68.724_dp*hdav_prime-1.35_dp
   else if (hdav_prime <= 0.62_dp .and. hdav_prime > 0.5_dp) then
     m0 = 308.475_dp*hdav_prime-121.23_dp
   else if (hdav_prime <= 1.15_dp .and. hdav_prime > 0.62_dp) then
@@ -341,15 +341,15 @@ subroutine G5func(hdav,psi,StSt_peak,G5)
     m0 = 268.344_dp
   end if
 
-  eta_00 = -sqrt((m0**2.0_dp*mu0**4.0_dp)/(6.25_dp+m0**2.0_dp*mu0**2.0_dp))
+  eta_00 = -sqrt((m0**2*mu0**4)/(6.25_dp+m0**2*mu0**2))
   k0 = 2.5_dp*sqrt(1.0_dp-(eta_00/mu0)**2)-2.5_dp-m0*eta_00
 
   if (eta0 < eta_00) then
     G0 = m0*eta0+k
   else if (eta0 < 0.0_dp .and. eta0 >= eta_00) then
-    G0 = 2.5_dp*sqrt(1.0_dp-(eta0/mu0)**2.0_dp)-2.5_dp
-  else if (eta0 < 0.036_dp .and. eta0 >= 0.0_dp) then
-    G0 = sqrt(1.5625_dp-1194.99_dp*eta0**2.0_dp)-1.25_dp
+    G0 = 2.5_dp*sqrt(1.0_dp-(eta0/mu0)**2)-2.5_dp
+  else if (eta0 < 0.03616_dp .and. eta0 >= 0.0_dp) then
+    G0 = sqrt(1.5625_dp-1194.99_dp*eta0**2)-1.25_dp
   else
     G0 = -155.543_dp*eta0+4.375_dp
   end if
@@ -373,6 +373,7 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
   real(dp) :: Ap,As,B,SPLp,SPLs,SPLa,A,rc
   intrinsic log10
   intrinsic sqrt
+  intrinsic abs
   ! constants
   c0 = 343.2_dp ! speed of sound (m/s)
   M = V/c0
@@ -381,23 +382,21 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
 
   if (trip .eqv. .false.) then
     ! UNTRIPPED boundary layer at 0 deg- thickness, displacement thickness
-    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2.0_dp))
-    d0_d = c*(10.0_dp**(3.0187_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2.0_dp))
+    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2))
+    d0_d = c*(10.0_dp**(3.0187_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2))
   else
     ! TRIPPED boundary layer at 0 deg- displacement thickness
-    ! this is from untripped, but since the pressure side doesn't matter,
-    ! use this value to carry on
-    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2.0_dp))
+    d0 = c*(10.0_dp**(1.892_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2))
     if (Re <= 0.3e6_dp) then
       d0_d = c*0.0601_dp*Re**(-0.114_dp)
     else
-      d0_d = c*(10.0_dp**(3.411_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2.0_dp))
+      d0_d = c*(10.0_dp**(3.411_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2))
     end if
   end if
 
   ! boundary layer on pressure side- thickness, displacement thickness
-  dpr = d0*(10.0_dp**(-0.04175_dp*alpha+0.00106_dp*alpha**2.0_dp))
-  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha+0.00113_dp*alpha**2.0_dp))
+  dpr = d0*(10.0_dp**(-0.04175_dp*alpha+0.00106_dp*alpha**2))
+  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha+0.00113_dp*alpha**2))
 
   if (trip .eqv. .false.) then
     ! UNTRIPPED boundary layer on suction side- displacement thickness
@@ -432,34 +431,34 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
   if (alpha < 1.33_dp) then
     St2 = 1.0_dp
   else if (alpha < 12.5_dp .and. alpha >= 1.33_dp) then
-    St2 = 10.0_dp**(0.0054_dp*(alpha-1.33_dp)**2.0_dp)
+    St2 = 10.0_dp**(0.0054_dp*(alpha-1.33_dp)**2)
   else
     St2 = 4.72_dp
   end if
 
-  St_bar = 0.5_dp*(St1+St2)
+  St_bar = (St1+St2)/2.0_dp
 
-  apre = Stp/St1
-  asuc = Sts/St_bar
-  bang = Sts/St2
+  apre = abs(Stp/St1)
+  asuc = abs(Sts/St_bar)
+  bang = abs(Sts/St2)
 
-  gamma = 27.09_dp*M+3.31_dp
+  gamma = 27.094_dp*M+3.31_dp
   gamma0 = 23.43_dp*M+4.651_dp
   beta = 72.65_dp*M+10.74_dp
   beta0 = -34.19_dp*M-13.82_dp
 
-  if (Re < 2.5e5_dp) then
+  if (Re < 2.47e5_dp) then
     K1 = -4.31_dp*log10(Re)+156.3_dp
-  else if (Re >= 2.5e5_dp .and. Re <= 8.0e5_dp) then
+  else if (Re >= 2.47e5_dp .and. Re <= 8.0e5_dp) then
     K1 = -9.0_dp*log10(Re)+181.6_dp
   else
-    K1 = 128.6_dp
+    K1 = 128.5_dp
   end if
 
   if (alpha < (gamma0-gamma)) then
     K2 = K1-1000.0_dp
   else if (alpha >= (gamma0-gamma) .and. alpha <= (gamma0+gamma)) then
-    K2 = K1+sqrt(beta**2.0_dp-(beta/gamma)**2.0_dp*(alpha-gamma0)**2.0_dp)+beta0
+    K2 = K1+sqrt(beta**2-(beta/gamma)**2*(alpha-gamma0)**2)+beta0
   else
     K2 = K1-12.0_dp
   end if
@@ -483,9 +482,9 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
     call Afunc(asuc,Re,As)
     call Bfunc(bang,Re,B)
 
-    SPLp = 10.0_dp*log10((dp_d*M**5.0_dp*L*Dh)/rc**2.0_dp)+Ap+(K1-3.0_dp)+DeltaK1
-    SPLs = 10.0_dp*log10((dp_d*M**5.0_dp*L*Dh)/rc**2.0_dp)+As+(K1-3.0_dp)
-    SPLa = 10.0_dp*log10((ds_d*M**5.0_dp*L*Dh)/rc**2.0_dp)+B+K2
+    SPLp = 10.0_dp*log10((dp_d*M**5*L*Dh)/rc**2)+Ap+(K1-3.0_dp)+DeltaK1
+    SPLs = 10.0_dp*log10((ds_d*M**5*L*Dh)/rc**2)+As+(K1-3.0_dp)
+    SPLa = 10.0_dp*log10((ds_d*M**5*L*Dh)/rc**2)+B+K2
 
     TBLTE =  10.0_dp*log10(10.0_dp**(SPLp/10.0_dp)+10.0_dp**(SPLs/10.0_dp)&
     +10.0_dp**(SPLa/10.0_dp))
@@ -497,7 +496,7 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
 
     call Afunc(bang,3.0_dp*Re,A)
 
-    SPLa = 10.0_dp*log10((ds_d*M**5.0_dp*L*Dl)/rc**2.0_dp)+A+K2
+    SPLa = 10.0_dp*log10((ds_d*M**5*L*Dl)/rc**2)+A+K2
 
     TBLTE = 10.0_dp*log10(10.0_dp**(SPLa/10.0_dp))
 
@@ -515,12 +514,13 @@ subroutine TBLTVfunc(f,V,c,r,theta_e,phi_e,atip,conv,tipflat,TBLTV)
   ! out
   real(dp), intent(out) :: TBLTV
   ! local
-  real(dp) :: c0,M,Mc,Dh,l,St,rc
+  real(dp) :: c0,M,Mc,Mmax,Dh,l,St,rc
   intrinsic log10
   ! constants
   c0 = 343.2_dp ! speed of sound (m/s)
   M = V/c0
   Mc = conv*M
+  Mmax = M*(1.0_dp+0.036*atip)
 
   call Dhfunc(theta_e,phi_e,M,Mc,Dh)
 
@@ -544,17 +544,18 @@ subroutine TBLTVfunc(f,V,c,r,theta_e,phi_e,atip,conv,tipflat,TBLTV)
     rc = r
   end if
 
-  TBLTV =  10.0_dp*log10((M**5.0_dp*(1.0_dp+0.036_dp*atip)**3.0_dp&
-  *l**2.0_dp*Dh)/rc**2.0_dp)-30.5_dp*(log10(St)+0.3_dp)**2.0_dp+126.0_dp
+  TBLTV =  10.0_dp*log10((M**2*Mmax**3*l**2*Dh)/rc**2)&
+  -30.5_dp*(log10(St)+0.3_dp)**2+126.0_dp
 
 end subroutine TBLTVfunc
 
 ! Laminar Boundary Layer Vortex Shedding
-subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,LBLVS)
+subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,LBLVS)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
   real(dp), intent(in) :: f,V,L,c,r,theta_e,phi_e,alpha,nu,conv
+  logical, intent(in) :: trip
   ! out
   real(dp), intent(out) :: LBLVS
   ! local
@@ -566,10 +567,15 @@ subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,LBLVS)
   Mc = conv*M
   Re = (V*c)/nu
 
-  ! UNTRIPPED boundary layer at 0 deg- thickness
-  d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2.0_dp))
+  if (trip .eqv. .false.) then
+    ! UNTRIPPED boundary layer at 0 deg- thickness
+    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2))
+  else
+    ! TRIPPED boundary layer at 0 deg- thickness
+    d0 = c*(10.0_dp**(1.892_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2))
+  end if
   ! boundary layer on pressure side- thickness
-  dpr = d0*(10.0_dp**(-0.04175_dp*alpha+0.00106_dp*alpha**2.0_dp))
+  dpr = d0*(10.0_dp**(-0.04175_dp*alpha+0.00106_dp*alpha**2))
 
   St = (f*dpr)/V
 
@@ -606,7 +612,7 @@ subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,LBLVS)
     rc = r
   end if
 
-  LBLVS = 10.0_dp*log10((dpr*M**5.0_dp*L*Dh)/rc**2.0_dp)+G1+G2+G3
+  LBLVS = 10.0_dp*log10((dpr*M**5*L*Dh)/rc**2)+G1+G2+G3
 
 end subroutine LBLVSfunc
 
@@ -631,23 +637,21 @@ subroutine TEBVSfunc(f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,conv,trip,TEBVS)
 
   if (trip .eqv. .false.) then
     ! UNTRIPPED boundary layer at 0 deg- thickness, displacement thickness
-    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2.0_dp))
-    d0_d = c*(10.0_dp**(3.0187_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2.0_dp))
+    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2))
+    d0_d = c*(10.0_dp**(3.0187_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2))
   else
-    ! TRIPPED boundary layer at 0 deg- displacement thickness
-    ! this is from untripped, but since the pressure side doesn't matter,
-    ! use this value to carry on
-    d0 = c*(10.0_dp**(1.6569_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2.0_dp))
+    ! TRIPPED boundary layer at 0 deg- thickness, displacement thickness
+    d0 = c*(10.0_dp**(1.892_dp-0.9045_dp*log10(Re)+0.0596_dp*(log10(Re))**2))
     if (Re <= 0.3e6_dp) then
       d0_d = c*0.0601_dp*Re**(-0.114_dp)
     else
-      d0_d = c*(10.0_dp**(3.411_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2.0_dp))
+      d0_d = c*(10.0_dp**(3.411_dp-1.5397_dp*log10(Re)+0.1059_dp*(log10(Re))**2))
     end if
   end if
 
   ! boundary layer on pressure side- thickness, displacement thickness
-  dpr = d0 * (10.0_dp**(-0.04175 * alpha + 0.00106 * alpha**2.0_dp))
-  dp_d = d0_d * (10.0_dp**(-0.0432 * alpha + 0.00113 * alpha**2.0_dp))
+  dpr = d0*(10.0_dp**(-0.04175_dp*alpha + 0.00106_dp*alpha**2))
+  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha + 0.00113_dp*alpha**2))
 
   if (trip .eqv. .false.) then
     ! UNTRIPPED boundary layer on suction side- displacement thickness
@@ -678,7 +682,7 @@ subroutine TEBVSfunc(f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,conv,trip,TEBVS)
   hdav = h/dav
 
   if (hdav >= 0.2_dp) then
-    St_peak = (0.212_dp-0.0045_dp*psi)/(1.0_dp+0.235_dp*(hdav)**(-1.0_dp)-0.00132_dp*(hdav)**(-2.0_dp))
+    St_peak = (0.212_dp-0.0045_dp*psi)/(1.0_dp+0.235_dp*(hdav)**(-1)-0.00132_dp*(hdav)**(-2))
   else
     St_peak = 0.1_dp*(hdav)+0.095_dp-0.00243_dp*psi
   end if
@@ -694,7 +698,7 @@ subroutine TEBVSfunc(f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,conv,trip,TEBVS)
     rc = r
   end if
 
-  TEBVS = 10.0_dp* log10((h*M**(5.5_dp)*L*Dh)/rc**2.0_dp)+G4+G5
+  TEBVS = 10.0_dp* log10((h*M**(5.5_dp)*L*Dh)/rc**2)+G4+G5
 
 end subroutine TEBVSfunc
 
@@ -730,7 +734,7 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
 
   ! Tip specfication
   tipflat = .false. ! round
-  ! tip = .true. ! flat
+  ! tipflat = .true. ! flat
 
   nu = 1.78e-5_dp  ! kinematic viscosity of air (m^2/s)
   conv = 0.8_dp  ! convection factor for speed
@@ -741,14 +745,14 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
   do i = 1,n-1
     wide(i) = rad(i+1)-rad(i) ! length of each radial section (m)
     rad_mid(i) = (wide(i)/2.0_dp)+rad(i) ! midpoint of each radial section (m)
-    vel(i) = sqrt((omega*rad_mid(i))**2.0_dp+wind**2.0_dp) ! wind speed over the blade (m/s)
+    vel(i) = sqrt((omega*rad_mid(i))**2+wind**2) ! wind speed over the blade (m/s)
     L(i) = wide(i)
     V(i) = vel(i)
   end do
 
   h(1:n-1) = 0.01_dp*c(1:n-1)  ! trailing edge thickness; 1% of chord length (m)
   atip = alpha(n-1)  ! angle of attack of the tip region (deg)
-  psi = 1.520169109_dp ! solid angle between both airfoil surfaces just upstream of the trailing edge (NACA 0012) (deg)
+  psi = 14.0_dp ! solid angle between both airfoil surfaces just upstream of the trailing edge (NACA 0012) (deg)
 
   ! One-third octave band frequencies (Hz)
   f(1) = 10.0_dp
@@ -795,7 +799,7 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
       trip,TBLTE)
       call TBLTVfunc(f(j),V(k),c(k),r,theta_e,phi_e,atip,conv,tipflat,TBLTV)
       call LBLVSfunc(f(j),V(k),L(k),c(k),r,theta_e,phi_e,alpha(k),nu,conv,&
-      LBLVS)
+      trip,LBLVS)
       call TEBVSfunc(f(j),V(k),L(k),c(k),h(k),r,psi,theta_e,phi_e,alpha(k),&
       nu,conv,trip,TEBVS)
 
@@ -812,10 +816,10 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
     BVS_t = sum(BVS_temp)
 
     ! Converting to sound pressure levels (SPL) (dB)
-    TE(j) = 10.0_dp*log10(TE_t/(refPres)**2.0_dp)
-    TV(j) = 10.0_dp*log10(TV_t/(refPres)**2.0_dp)
-    BLVS(j) = 10.0_dp*log10(BLVS_t/(refPres)**2.0_dp)
-    BVS(j) = 10.0_dp*log10(BVS_t/(refPres)**2.0_dp)
+    TE(j) = 10.0_dp*log10((TE_t/refPres)**2)
+    TV(j) = 10.0_dp*log10((TV_t/refPres)**2)
+    BLVS(j) = 10.0_dp*log10((BLVS_t/refPres)**2)
+    BVS(j) = 10.0_dp*log10((BVS_t/refPres)**2)
 
     ! multiplied by number of blades (B)
     SPLg(j) = 10.0_dp*log10(B*(10.0_dp**(TE(j)/10.0_dp)+10.0_dp**(TV(j)/&
@@ -864,7 +868,7 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
   SPLp(1:nf) = refPres*10.0_dp**(SPLg(1:nf)/20.0_dp)
 
   ! Converting back to SPL (dB)
-  SPLoa = 10.0_dp*log10(sum(SPLp**2.0_dp)/refPres**2.0_dp)
+  SPLoa = 10.0_dp*log10((sum(SPLp)/refPres)**2)
 
 end subroutine OASPL
 
@@ -897,7 +901,7 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,windvel,B,h,rad,c,alpha,
   windrad = wind*pi/180.0_dp
 
   do i = 1,nturb
-    r(i) = sqrt((obs(1)-x(i))**2.0_dp+(obs(2)-y(i))**2.0_dp+(obs(3)-h)**2.0_dp)
+    r(i) = sqrt((obs(1)-x(i))**2+(obs(2)-y(i))**2+(obs(3)-h)**2)
 
     obsi(1) = obs(1)-x(i)
     obsi(2) = obs(2)-y(i)
@@ -906,7 +910,7 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,windvel,B,h,rad,c,alpha,
     yi = 0.0_dp
 
     ! Adjusting the coordinates for the wind direction
-    rxy = sqrt((obsi(1))**2.0_dp+(obsi(2))**2.0_dp)
+    rxy = sqrt((obsi(1))**2+(obsi(2))**2)
     ang = atan2(obsi(2),obsi(1))+windrad
 
     obsi(1) = rxy*cos(ang)
@@ -915,17 +919,17 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,windvel,B,h,rad,c,alpha,
     phi_e(i) = abs((atan2((obsi(2)-yi),(obsi(1)-xi)))*180.0_dp/pi)
     theta_e(i) = (atan2(abs(h-obsi(3)),abs(obsi(2)-yi)))*180.0_dp/pi
     if (phi_e(i) < 5.0_dp) then
-      phi_e(i) = (1.0_dp/10.0_dp)*phi_e(i)**2.0_dp + 2.5_dp
+      phi_e(i) = (1.0_dp/10.0_dp)*phi_e(i)**2 + 2.5_dp
     end if
     if (phi_e(i) > 175.0_dp) then
       phi_er(i) = 180.0_dp - phi_e(i)
-      phi_er(i) = (1.0_dp/10.0_dp)*phi_er(i)**2.0_dp + 2.5_dp
+      phi_er(i) = (1.0_dp/10.0_dp)*phi_er(i)**2 + 2.5_dp
       phi_e(i) = 180.0_dp - phi_er(i)
     end if
 
     if (theta_e(i) > 85.0_dp) then
       theta_er(i) = 90.0_dp - theta_e(i)
-      theta_er(i) = (1.0_dp/10.0_dp)*theta_er(i)**2.0_dp + 2.5_dp
+      theta_er(i) = (1.0_dp/10.0_dp)*theta_er(i)**2 + 2.5_dp
       theta_e(i) = 90.0_dp - theta_er(i)
     end if
 
