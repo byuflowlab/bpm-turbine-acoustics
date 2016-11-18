@@ -34,7 +34,7 @@ plot_dist = True
 x_test = np.array([0.])
 y_test = np.array([0.])
 obs_test = np.array([0., 243.84, 0.])
-wind_test = 180.
+winddir_test = 180.
 rpm_test = np.array([28.5])
 L_test = 23.5
 windvel_test = np.array([14.0])
@@ -57,7 +57,7 @@ rad = r_nrel*r_ratio
 rad[0] = Rhub
 c = chord_nrel*(r_ratio*chord_corr)
 
-db_test_ros = _bpmacoustic.turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, windvel_test, B_test, h_test, rad, c, alpha, noise_corr)
+db_test_ros = _bpmacoustic.turbinepos(x_test, y_test, obs_test, winddir_test, rpm_test, windvel_test, B_test, h_test, rad, c, alpha, noise_corr)
 
 if plot_dist == False:
     print '\nTest Cases:'
@@ -71,7 +71,7 @@ if plot_dist == False:
 x_test = np.array([0.,5.]) #x-locations of turbines (m)
 y_test = np.array([0.,5.]) #y-locations of turbines (m)
 obs_test = np.array([0., 200., 0.]) #x, y, and z-location of the observer (m)
-wind_test = 180. #wind direction (deg)
+winddir_test = 180. #wind direction (deg)
 rpm_test = np.array([28.5,28.5]) #roation rate of the tubrine (rpm)
 L_test = 23.4696 #length of the turbine blades (m)
 windvel_test = np.array([10.0,10.0]) #wind velocity (m/s)
@@ -93,7 +93,7 @@ rad = r_nrel*r_ratio
 rad[0] = Rhub
 c = chord_nrel*(r_ratio*chord_corr)
 
-db_test = _bpmacoustic.turbinepos(x_test, y_test, obs_test, wind_test, rpm_test, windvel_test, B_test, h_test, rad, c, alpha, noise_corr)
+db_test = _bpmacoustic.turbinepos(x_test, y_test, obs_test, winddir_test, rpm_test, windvel_test, B_test, h_test, rad, c, alpha, noise_corr)
 
 if plot_dist == False:
     print '\tTest SPL: ', db_test
@@ -107,7 +107,7 @@ if plot_dist == True:
     # http://www.infinis.com/our-business/onshore-wind/our-operations/lissett-airfield/
     turbx = np.array([0.0])
     turby = np.array([0.0])
-    wind = 0.0
+    winddir = 0.0
     rpm = np.array([16.1])
     windvel = np.array([13.5])
     B = 3.
@@ -139,7 +139,7 @@ if plot_dist == True:
     point = 0
     for i in range(n):
         for j in range(n):
-            F[i,j] = _bpmacoustic.turbinepos(turbx, turby, np.array([X[i,j],Y[i,j],0.]), wind, rpm, windvel, B, h, rad, c, alpha, noise_corr)
+            F[i,j] = _bpmacoustic.turbinepos(turbx, turby, np.array([X[i,j],Y[i,j],0.]), winddir, rpm, windvel, B, h, rad, c, alpha, noise_corr)
             point += 1
             print 'Calculating', point, 'of', n**2
 

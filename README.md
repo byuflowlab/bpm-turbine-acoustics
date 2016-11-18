@@ -12,18 +12,22 @@ Brooks, T., Pope, D., and Marcolini, M., â€œAipower Self-Noise and Prediction,â€
 ## Installation instructions
 
 - system requirements: gfortran (using MinGW for Windows in order to use the commands here), python 2.7, numpy, scipy
-- navigate to the directory and run the following command in the terminal to build the Fortran code:
+- run:
+```
+python setup.py install
+```
+- or navigate to the directory and run the following command in the terminal to build the Fortran code:
 
 Mac
 ```
 $ cd wake_model
-$ f2py -c  --opt=-O2 -m _bpmcomplete BPM_complete.f90
+$ f2py -c  --opt=-O2 -m _bpmacoustic BPM_Acoustic_Model.f90
 ```
 
 Windows
 ```
 cd wake_model
-python <\your\path\to\f2py.py> -c --opt=-O2 --compiler=mingw32 --fcompiler=gfortran -m _bpmcomplete BPM_complete.f90
+python <\your\path\to\f2py.py> -c --opt=-O2 --compiler=mingw32 --fcompiler=gfortran -m _bpmacoustic BPM_Acoustic_Model.f90
 ```
 (<\your\path\to\f2py.py>: most likely C:\Python27\Scripts\f2py.py)
 
@@ -31,6 +35,5 @@ python <\your\path\to\f2py.py> -c --opt=-O2 --compiler=mingw32 --fcompiler=gfort
 
 This python code can be run from another file using:
 ```python
-from BPM_complete_bladeseg import turbinepos
-turbinepos(x,y,obs,wind,rpm,L,windvel,B,h,Rhub,rad,c,alpha,corr,py_for) # SPL at specified observer location (xo,yo,zo) for a given turbine rotation rate, blade geometry, and free stream wind speed
+SPL = _bpmacoustic.turbinepos(x, y, obs, winddir, rpm, windvel, B, h, rad, c, alpha, noise_corr) # SPL at specified observer location (xo,yo,zo) for a given turbine rotation rate, blade geometry, and free stream wind speed
 ```
