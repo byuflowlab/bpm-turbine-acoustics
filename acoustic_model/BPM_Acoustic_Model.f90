@@ -952,7 +952,7 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,windvel,B,h,rad,c,alpha,
 
   turbnoise = 10.0_dp*log10(turbine_noise)
 
-  turbinenoise = turbnoise-corr ! correction based on Rosiere valdiation (243.84 m, 800 ft should be 47 dB)
+  turbinenoise = turbnoise+corr ! correction based on Rosiere valdiation (243.84 m, 800 ft should be 47 dB)
 
 end subroutine turbinepos
 
