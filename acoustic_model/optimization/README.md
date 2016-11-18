@@ -2,7 +2,7 @@
 
 This folder contains the optimization codes used to run the BPM acoustics model with the FLORIS turbine wake model. After building the codes (see below), run the optimization from the command line using:
 
-    $ python Optimizer.py [SPL limit value (dB)]
+    $ python Optimization.py [SPL limit value (dB)]
 
 This older version of the FLORIS model was used in the optimizations used for our specific publication, but a new version of the codes along with more detailed instructions at: https://github.com/wisdem/florisse. Also required for the optimization is CCBlade, of which the older version using in our optimizations, is included, but the newer version can be found at: https://github.com/wisdem/ccblade. All optimizations were run with SNOPT, a Python optimization code, which is also required to run the optimization code. The following instructions outline how to build the FLORIS codes for use in reference with the BPM code (copied from https://github.com/WISDEM/FLORISSE/tree/develop).
 
