@@ -8,6 +8,8 @@
 ~*
 /.idea/*
 
+/_florisunify.so.dSYM/*
+
 /build/*
 /dist/*
 /acoustic_model/bpmacoustic.egg-info/*
