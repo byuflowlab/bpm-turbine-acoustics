@@ -1,0 +1,3 @@
+# BPM Acoustics Optimization Data
+
+This folder contains the text files of optimization results run for the publication of the aero-acoustic optimization using this BPM model. The two wind farms used in the optimization were based on the Lissett Airfield Wind Farm (http://www.infinis.com/our-business/onshore-wind/our-operations/lissett-airfield/) and the Rosiere Wind Farm (https://www.mge.com/environment/green-power/wind/rosiere.htm). The data is broken up into final optimization results in the main folder and original optimization results used for comparison in the respective subfolder. All optimizations were run with SNOPT, a Python optimization code.

@@ -108,7 +108,7 @@ if plot_dist == True:
     turbx = np.array([0.0])
     turby = np.array([0.0])
     wind = 0.0
-    rpm = np.array([16.8])
+    rpm = np.array([16.1])
     windvel = np.array([13.5])
     B = 3.
     L = 45.

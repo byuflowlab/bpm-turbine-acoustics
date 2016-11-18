@@ -1,3 +1,5 @@
+*.o
+*.out
 *.pyc
 *.pyd
 *.sh
