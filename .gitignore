@@ -4,6 +4,7 @@
 *.pyd
 *.sh
 *.so
+*.txt
 *.DS_Store
 ~*
 /.idea/*
