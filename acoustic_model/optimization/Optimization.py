@@ -94,10 +94,6 @@ def floris_power(turbineXw, turbineYw, rotorDiameter, Vinf, rho, generator_effic
 
     Cp, Ct, axialInduction = CpCt_solve(rotorDiameter, Vin, rpm, powercurve)
 
-
-
-
-
     while True:
         velocitiesTurbines, _, _, _ = _florisunify.floris_unified(turbineXw, turbineYw, yaw_deg, rotorDiameter, Vinf, Ct, axialInduction, ke, kd, me, initialWakeDisplacement, bd, MU, aU, bU, initialWakeAngle, cos_spread, keCorrCT, Region2CT, keCorrArray, useWakeAngle, adjustInitialWakeDiamToYaw, axialIndProvided, useaUbU)
 
@@ -113,12 +109,6 @@ def floris_power(turbineXw, turbineYw, rotorDiameter, Vinf, rho, generator_effic
     return velocitiesTurbines, wt_power/power_corr, power
 
 
-
-
-
-
-
-
 # SPL CALCULATION BASED ON BPM ACOUSTIC MODEL
 def bpm_noise(turbineX, turbineY, obs, rpm, blade, high, rad, c, alpha, velocitiesTurbines, windroseDirections):
 
@@ -127,7 +117,7 @@ def bpm_noise(turbineX, turbineY, obs, rpm, blade, high, rad, c, alpha, velociti
 
     SPL = np.zeros(nobs*nwind) #setting up vector for the constraints
 
-    noise_corr = -0.22243092339999748 #noise correction to match the Rosiere Wind Farm SPL of 47 dB
+    noise_corr = 1.7862546970999986 #noise correction to match the Rosiere Wind Farm SPL of 47 dB
 
     k = 0
     for i in range(nwind):
@@ -136,7 +126,6 @@ def bpm_noise(turbineX, turbineY, obs, rpm, blade, high, rad, c, alpha, velociti
             k += 1
 
     return SPL
-
 
 
 # TURBINE SEPARATION FUNCTION
@@ -157,8 +146,6 @@ def sep_func(loc):
             k += 1
 
     return sep - space*rotorDiameter[0]
-
-
 
 
 def obj_func(xdict):
@@ -218,14 +205,13 @@ def obj_func(xdict):
         power_dir[d] = power*windFrequencies[d]
     APP = sum(power_dir)
 
-    funcs['obj'] = (-1.*APP)/1.0e5
-
+    funcs['obj'] = (-1.*APP)/1.0e4
 
     # calculate constraint values
     #HARDCODE FORTRAN IN OBJECTIVE
     # SPL = np.zeros(nobs*nwind)
     # L = rotorDiameter/2. - Rhub
-    # noise_corr = -0.22243092339999748 #noise correction to match the Rosiere Wind Farm SPL of 47 dB
+    # noise_corr = 1.7862546970999986 #noise correction to match the Rosiere Wind Farm SPL of 47 dB
     # k = 0
     # # print x,y,obs,windroseDirections,rpmw,L,veleff[i],blade,high,rad,c,alpha,noise_corr
     # for i in range(nwind):
@@ -247,7 +233,7 @@ def obj_func(xdict):
     return funcs, fail
 
 
-## Main
+# Main
 if __name__ == "__main__":
 
     global rotorDiameter
@@ -430,7 +416,7 @@ if __name__ == "__main__":
     res = opt(optProb)
     print res
 
-    pow = np.array(-1*res.fStar)*1e5
+    pow = np.array(-1*res.fStar)*1e4
     xf = res.xStar['xvars']*100.
     yf = res.xStar['yvars']*100.
     rpmf = res.xStar['rpm']*10.

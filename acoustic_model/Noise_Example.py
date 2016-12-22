@@ -42,19 +42,18 @@ B_test = 3.
 h_test = 25.
 Rhub = 0.8382
 chord_corr = 2.190491
-noise_corr = 0.22243092339999748
+noise_corr = 1.7862546970999986
 
 # NREL 5-MW Turbine Specifications
 Rtip_nrel = 63.0
 
-r_nrel = np.array([1.5, 2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333])
+r_nrel = np.array([2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333, 63.0])
 chord_nrel = np.array([3.542, 3.854, 4.167, 4.557, 4.652, 4.458, 4.249, 4.007, 3.748, 3.502, 3.256, 3.010, 2.764, 2.518, 2.313, 2.086, 1.419])
 alpha = np.array([13.308, 13.308, 13.308, 13.308, 11.480, 10.162, 9.011, 7.795, 6.544, 5.361, 4.188, 3.125, 2.319, 1.526, 0.863, 0.370, 0.106])
 
 # Scaling the NREL turbine to the size of the Rosiere turbine
 r_ratio = L_test/Rtip_nrel
 rad = r_nrel*r_ratio
-rad[0] = Rhub
 c = chord_nrel*(r_ratio*chord_corr)
 
 db_test_ros = _bpmacoustic.turbinepos(x_test, y_test, obs_test, winddir_test, rpm_test, windvel_test, B_test, h_test, rad, c, alpha, noise_corr)
@@ -83,14 +82,13 @@ chord_corr = 2.190491
 # NREL 5-MW Turbine Specifications
 Rtip_nrel = 63.0
 
-r_nrel = np.array([1.5, 2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333])
+r_nrel = np.array([2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333, 63.0])
 chord_nrel = np.array([3.542, 3.854, 4.167, 4.557, 4.652, 4.458, 4.249, 4.007, 3.748, 3.502, 3.256, 3.010, 2.764, 2.518, 2.313, 2.086, 1.419])
 alpha = np.array([13.308, 13.308, 13.308, 13.308, 11.480, 10.162, 9.011, 7.795, 6.544, 5.361, 4.188, 3.125, 2.319, 1.526, 0.863, 0.370, 0.106])
 
 # Scaling the NREL turbine to the size of the specified turbine
 r_ratio = L_test/Rtip_nrel
 rad = r_nrel*r_ratio
-rad[0] = Rhub
 c = chord_nrel*(r_ratio*chord_corr)
 
 db_test = _bpmacoustic.turbinepos(x_test, y_test, obs_test, winddir_test, rpm_test, windvel_test, B_test, h_test, rad, c, alpha, noise_corr)
@@ -118,7 +116,7 @@ if plot_dist == True:
     # NREL 5 MW Turbine
     Rtip_nrel = 63.0
     r_ratio = L/Rtip_nrel
-    noise_corr = -0.22243092339999748 #noise correction to match the Rosiere Wind Farm SPL of 47 dB
+    noise_corr = 1.7862546970999986 #noise correction to match the Rosiere Wind Farm SPL of 47 dB
 
     r_nrel = np.array([1.5, 2.8667, 5.6000, 8.3333, 11.7500, 15.8500, 19.9500, 24.0500, 28.1500, 32.2500, 36.3500, 40.4500, 44.5500, 48.6500, 52.7500, 56.1667, 58.9000, 61.6333])
     chord_nrel = np.array([3.542, 3.854, 4.167, 4.557, 4.652, 4.458, 4.249, 4.007, 3.748, 3.502, 3.256, 3.010, 2.764, 2.518, 2.313, 2.086, 1.419])

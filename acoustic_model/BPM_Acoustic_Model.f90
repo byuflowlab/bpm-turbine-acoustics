@@ -359,23 +359,23 @@ subroutine G5func(hdav,psi,StSt_peak,G5)
 end subroutine G5func
 
 ! Turbulent Boundary Layer Trailing Edge Noise
-subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
+subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,c0,conv,trip,TBLTE)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
-  real(dp), intent(in) :: f,V,L,c,r,theta_e,phi_e,alpha,nu,conv
+  real(dp), intent(in) :: f,V,L,c,r,theta_e,phi_e,alpha,nu,c0,conv
   logical, intent(in) :: trip
   ! out
   real(dp), intent(out) :: TBLTE
   ! local
-  real(dp) :: c0,M,Mc,Re,d0,d0_d,ds_d,dpr,dp_d,Dh,Dl,Stp,Sts,St1,St2,St_bar
+  real(dp) :: M,Mc,Re,d0,d0_d,ds_d,dpr,dp_d,Dh,Dl,Stp,Sts,St1,St2,St_bar,St_peak
   real(dp) :: apre,asuc,bang,gamma,gamma0,beta,beta0,K1,K2,Re_dp,DeltaK1
   real(dp) :: Ap,As,B,SPLp,SPLs,SPLa,A,rc
   intrinsic log10
   intrinsic sqrt
   intrinsic abs
+  intrinsic max
   ! constants
-  c0 = 343.2_dp ! speed of sound (m/s)
   M = V/c0
   Mc = conv*M
   Re = (V*c)/nu
@@ -429,18 +429,20 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
   St1 = 0.02_dp*M**(-0.6_dp)
 
   if (alpha < 1.33_dp) then
-    St2 = 1.0_dp
-  else if (alpha < 12.5_dp .and. alpha >= 1.33_dp) then
-    St2 = 10.0_dp**(0.0054_dp*(alpha-1.33_dp)**2)
+    St2 = St1*1.0_dp
+  else if (alpha <= 12.5_dp .and. alpha >= 1.33_dp) then
+    St2 = St1*10.0_dp**(0.0054_dp*(alpha-1.33_dp)**2)
   else
-    St2 = 4.72_dp
+    St2 = St1*4.72_dp
   end if
 
   St_bar = (St1+St2)/2.0_dp
 
-  apre = abs(Stp/St1)
-  asuc = abs(Sts/St_bar)
-  bang = abs(Sts/St2)
+  St_peak = max(St1,St2,St_bar)
+
+  apre = Stp/St1
+  asuc = Sts/St1
+  bang = Sts/St2
 
   gamma = 27.094_dp*M+3.31_dp
   gamma0 = 23.43_dp*M+4.651_dp
@@ -466,7 +468,7 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
   Re_dp = (V*dp_d)/nu
 
   if (Re_dp <= 5000.0_dp) then
-    DeltaK1 = alpha*(1.43_dp*log10(Re_dp))-5.29_dp
+    DeltaK1 = alpha*(1.43_dp*log10(Re_dp)-5.29_dp)
   else
     DeltaK1 = 0.0_dp
   end if
@@ -477,7 +479,18 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
     rc = r
   end if
 
-  if(alpha <= 12.5_dp) then
+  if(alpha > 12.5_dp .or. alpha > gamma0) then
+    ! Turbulent Boundary Layer Separation Stall Noise (TBLSS); this is were the airfoil is stalling and stall noise dominates
+    ! SPLp = -infinity; 10**(SPLp/10) = 0
+    ! SPLs = -infinity; 10**(SPLs/10) = 0
+
+    call Afunc(bang,3.0_dp*Re,A)
+
+    SPLa = 10.0_dp*log10((ds_d*M**5*L*Dl)/rc**2)+A+K2
+
+    TBLTE = 10.0_dp*log10(10.0_dp**(SPLa/10.0_dp))
+
+  else
     call Afunc(apre,Re,Ap)
     call Afunc(asuc,Re,As)
     call Bfunc(bang,Re,B)
@@ -489,35 +502,23 @@ subroutine TBLTEfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,TBLTE)
     TBLTE =  10.0_dp*log10(10.0_dp**(SPLp/10.0_dp)+10.0_dp**(SPLs/10.0_dp)&
     +10.0_dp**(SPLa/10.0_dp))
 
-  else
-    ! Turbulent Boundary Layer Separation Stall Noise (TBLSS); this is were the airfoil is stalling and stall noise dominates
-    ! SPLp = -infinity; 10**(SPLp/10) = 0
-    ! SPLs = -infinity; 10**(SPLs/10) = 0
-
-    call Afunc(bang,3.0_dp*Re,A)
-
-    SPLa = 10.0_dp*log10((ds_d*M**5*L*Dl)/rc**2)+A+K2
-
-    TBLTE = 10.0_dp*log10(10.0_dp**(SPLa/10.0_dp))
-
   end if
 
 end subroutine TBLTEfunc
 
 ! Turbulent Boundary Layer Tip Vortex Noise
-subroutine TBLTVfunc(f,V,c,r,theta_e,phi_e,atip,conv,tipflat,TBLTV)
+subroutine TBLTVfunc(f,V,c,r,theta_e,phi_e,atip,c0,conv,tipflat,TBLTV)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
-  real(dp), intent(in) :: f,V,c,r,theta_e,phi_e,atip,conv
+  real(dp), intent(in) :: f,V,c,r,theta_e,phi_e,atip,c0,conv
   logical, intent(in) :: tipflat
   ! out
   real(dp), intent(out) :: TBLTV
   ! local
-  real(dp) :: c0,M,Mc,Mmax,Dh,l,St,rc
+  real(dp) :: M,Mc,Mmax,Dh,l,St,rc
   intrinsic log10
   ! constants
-  c0 = 343.2_dp ! speed of sound (m/s)
   M = V/c0
   Mc = conv*M
   Mmax = M*(1.0_dp+0.036*atip)
@@ -550,19 +551,18 @@ subroutine TBLTVfunc(f,V,c,r,theta_e,phi_e,atip,conv,tipflat,TBLTV)
 end subroutine TBLTVfunc
 
 ! Laminar Boundary Layer Vortex Shedding
-subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,LBLVS)
+subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,c0,conv,trip,LBLVS)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
-  real(dp), intent(in) :: f,V,L,c,r,theta_e,phi_e,alpha,nu,conv
+  real(dp), intent(in) :: f,V,L,c,r,theta_e,phi_e,alpha,nu,c0,conv
   logical, intent(in) :: trip
   ! out
   real(dp), intent(out) :: LBLVS
   ! local
-  real(dp) :: c0,M,Mc,Re,d0,dpr,St,Dh,St1,St_peak,e,G1,Re0,d,G2,G3,rc
+  real(dp) :: M,Mc,Re,d0,dpr,St,Dh,St1,St_peak,e,G1,Re0,d,G2,G3,rc
   intrinsic log10
   ! constants
-  c0 = 343.2_dp ! speed of sound (m/s)
   M = V/c0
   Mc = conv*M
   Re = (V*c)/nu
@@ -617,20 +617,19 @@ subroutine LBLVSfunc(f,V,L,c,r,theta_e,phi_e,alpha,nu,conv,trip,LBLVS)
 end subroutine LBLVSfunc
 
 ! Trailing Edge Bluntness Vortex Shedding Noise
-subroutine TEBVSfunc(f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,conv,trip,TEBVS)
+subroutine TEBVSfunc(f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,c0,conv,trip,TEBVS)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
-  real(dp), intent(in) :: f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,conv
+  real(dp), intent(in) :: f,V,L,c,h,r,psi,theta_e,phi_e,alpha,nu,c0,conv
   logical, intent(in) :: trip
   ! out
   real(dp), intent(out) :: TEBVS
   ! local
-  real(dp) :: c0,M,Mc,Re,d0,d0_d,dpr,dp_d,ds_d,Dh,St,dav,hdav
+  real(dp) :: M,Mc,Re,d0,d0_d,dpr,dp_d,ds_d,Dh,St,dav,hdav
   real(dp) :: St_peak,StSt_peak,G4,G5,rc
   intrinsic log10
   ! constants
-  c0 = 343.2_dp ! speed of sound (m/s)
   M = V/c0
   Mc = conv*M
   Re = (V*c)/nu
@@ -715,7 +714,7 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
   real(dp), intent(out) :: SPLoa
   ! local
   integer :: nf,i,j,k
-  real(dp) :: pi,nu,conv,omega,atip,psi,refPres,TBLTE,TBLTV,LBLVS,TEBVS
+  real(dp) :: pi,nu,c0,conv,omega,atip,psi,refPres,TBLTE,TBLTV,LBLVS,TEBVS
   real(dp) :: TE_t,TV_t,BLVS_t,BVS_t
   real(dp), dimension(n-1) :: wide,rad_mid,vel,L,V,h
   real(dp), dimension(n-1) :: TE_temp,TV_temp,BLVS_temp,BVS_temp
@@ -728,6 +727,13 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
   pi = 3.1415926535897932_dp
   nf = 34
 
+  ! Aerodynamic constants
+  nu = 1.78e-5_dp  ! kinematic viscosity of air (m^2/s)
+  c0 = 343.2_dp ! speed of sound (m/s)
+  conv = 0.8_dp  ! convection factor for speed
+
+  psi = 14.0_dp ! solid angle between both airfoil surfaces just upstream of the trailing edge (NACA 0012) (deg)
+
   ! Using untripped or tripped boundary layer specficiation
   trip = .false. ! untripped
   ! trip = .true. ! tripped
@@ -735,9 +741,6 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
   ! Tip specfication
   tipflat = .false. ! round
   ! tipflat = .true. ! flat
-
-  nu = 1.78e-5_dp  ! kinematic viscosity of air (m^2/s)
-  conv = 0.8_dp  ! convection factor for speed
 
   ! Parameters of the wind turbine (f,V,L,c,h,alpha,atip)
   omega = (rpm*2.0_dp*pi)/60.0_dp  ! angular velocity (rad/sec)
@@ -752,7 +755,6 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
 
   h(1:n-1) = 0.01_dp*c(1:n-1)  ! trailing edge thickness; 1% of chord length (m)
   atip = alpha(n-1)  ! angle of attack of the tip region (deg)
-  psi = 14.0_dp ! solid angle between both airfoil surfaces just upstream of the trailing edge (NACA 0012) (deg)
 
   ! One-third octave band frequencies (Hz)
   f(1) = 10.0_dp
@@ -795,13 +797,13 @@ subroutine OASPL(n,r,theta_e,phi_e,rpm,wind,B,rad,c,alpha,SPLoa)
   ! Calculating sound pressure (Pa) for each noise source at each frequency and radial position
   do j=1,nf
     do k=1,n-1
-      call TBLTEfunc(f(j),V(k),L(k),c(k),r,theta_e,phi_e,alpha(k),nu,conv,&
+      call TBLTEfunc(f(j),V(k),L(k),c(k),r,theta_e,phi_e,alpha(k),nu,c0,conv,&
       trip,TBLTE)
-      call TBLTVfunc(f(j),V(k),c(k),r,theta_e,phi_e,atip,conv,tipflat,TBLTV)
-      call LBLVSfunc(f(j),V(k),L(k),c(k),r,theta_e,phi_e,alpha(k),nu,conv,&
+      call TBLTVfunc(f(j),V(k),c(k),r,theta_e,phi_e,atip,c0,conv,tipflat,TBLTV)
+      call LBLVSfunc(f(j),V(k),L(k),c(k),r,theta_e,phi_e,alpha(k),nu,c0,conv,&
       trip,LBLVS)
       call TEBVSfunc(f(j),V(k),L(k),c(k),h(k),r,psi,theta_e,phi_e,alpha(k),&
-      nu,conv,trip,TEBVS)
+      nu,c0,conv,trip,TEBVS)
 
       TE_temp(k) = refPres*10.0_dp**(TBLTE/20.0_dp)
       TV_temp(k) = refPres*10.0_dp**(TBLTV/20.0_dp)
@@ -934,7 +936,7 @@ subroutine turbinepos(nturb,nnrel,nobs,x,y,obs,wind,rpm,windvel,B,h,rad,c,alpha,
     end if
 
     ! if (phi_e(i) == 0.0_dp .or. phi_e(i) == 180.0_dp) then
-    !   r(i) = r(i) - 0.2 ! directivity adjustment based on work by Luis Vargas (Wind Turbine Noise Prediction)
+    !   r(i) = r(i) + 0.2 ! directivity adjustment based on work by Luis Vargas (Wind Turbine Noise Prediction)
     ! end if
   end do
 
