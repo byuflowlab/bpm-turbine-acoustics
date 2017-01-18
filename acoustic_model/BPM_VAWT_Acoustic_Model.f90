@@ -1,4 +1,5 @@
 ! Subroutine to use the BPM equations for turbine acoustics
+! Modified for an H-rotor vertical-axis wind turbine
 
 ! cubic spline interpolation setup (for Tip Vortex Noise)
 subroutine splineint(n,x,y,xval,yval)
@@ -124,19 +125,18 @@ subroutine cubspline(x1,x2,x3,y1,y2,y3,xval,yval)
 end subroutine cubspline
 
 ! Function to compute directivity angles and distance
-! Based on work by Luis Vargas (Wind Turbine Noise Prediction)
-subroutine direct(n,xt,yt,zt,c,c1,d,Hub,beta,r,theta_e,phi_e)
+subroutine direct(n,xt,yt,zt,c,c1,ht,rad,Hub,rotdir,beta,r,theta_e,phi_e)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
   integer, intent(in) :: n
-  real(dp), intent(in) :: xt,yt,zt,Hub,beta
-  real(dp), dimension(n), intent(in) :: c,c1,d
+  real(dp), intent(in) :: xt,yt,zt,rad,Hub,rotdir,beta
+  real(dp), dimension(n), intent(in) :: c,c1,ht
   ! out
   real(dp), dimension(n), intent(out) :: r,theta_e,phi_e
   ! local
   integer :: i,sign
-  real(dp) :: pi,xo,yo,zo,xs,zs,xe_d,ze_d,theta,xe,ze,phi_er
+  real(dp) :: pi,xo,yo,zo,xs,ys,xe,ye,ze,theta_er
   real(dp), dimension(n) :: c2
   intrinsic sin
   intrinsic cos
@@ -152,46 +152,38 @@ subroutine direct(n,xt,yt,zt,c,c1,d,Hub,beta,r,theta_e,phi_e)
   ! Calculating observer location from hub
   xo = xt
   yo = yt
-  zo = zt-Hub
+  zo = zt - Hub
 
   do i=1,n
     ! Calculating trailing edge position from hub
-    xs = sin(beta)*d(i)-cos(beta)*c2(i)
-    zs = cos(beta)*d(i)+sin(beta)*c2(i)
+    if (rotdir >= 0.0_dp) then
+      xs = -rad*cos(beta)-c2(i)*sin(beta)
+      ys = -rad*sin(beta)+c2(i)*cos(beta)
+    else
+      xs = -rad*cos(-beta)+c2(i)*sin(-beta)
+      ys = -rad*sin(-beta)-c2(i)*cos(-beta)
+    end if
 
     ! Calculating observer position from trailing edge
-    xe_d = xo-xs
-    ze_d = zo-zs
-
-    ! Rotating observer position with repsect to beta
-    theta = pi - beta
-    xe = cos(theta)*xe_d+sin(theta)*ze_d
-    ze = -sin(theta)*xe_d+cos(theta)*ze_d
+    xe = xo-xs
+    ye = yo-ys
+    ze = zo-ht(i)
 
     ! Calculating observer distance and directivity angles
-    r(i) = sqrt(yo**2+xe**2+ze**2)
-    theta_e(i) = atan2(sqrt(yo**2+ze**2),xe)
-    phi_e(i) = atan2(yo,ze)
+    r(i) = sqrt(xe**2+ye**2+ze**2)
+    theta_e(i) = atan2(xe,ye)+beta
+    phi_e(i) = atan2(sqrt(xe**2+ye**2),ze)
 
-    ! Quadratic smoothing when phi_e is close to 0 or 180 degrees
-    if (abs(phi_e(i)) < 5.0_dp*pi/180.0_dp) then
-      if (phi_e(i) >= 0.0_dp) then
+    ! Quadratic smoothing when theta_e is close to 0 or 180 degrees
+    if (abs(theta_e(i)) < 5.0_dp*pi/180.0_dp) then
+      if (theta_e(i) >= 0.0_dp) then
         sign = 1
       else
         sign = -1
       end if
-      phi_er = abs(phi_e(i))*180.0_dp/pi
-      phi_er = 0.1_dp*phi_er**2 + 2.5_dp
-      phi_e(i) = sign*phi_er*pi/180.0_dp
-    else if (abs(phi_e(i)) > 175.0_dp*pi/180.0_dp) then
-      if (phi_e(i) >= 0.0_dp) then
-        sign = 1
-      else
-        sign = -1
-      end if
-      phi_er = abs(phi_e(i))*180.0_dp/pi
-      phi_er = -0.1_dp*(phi_er - 180.0_dp)**2 + 177.5_dp
-      phi_e(i) = sign*phi_er*pi/180.0_dp
+      theta_er = abs(theta_e(i))*180.0_dp/pi
+      theta_er = 0.1_dp*theta_er**2 + 2.5_dp
+      theta_e(i) = sign*theta_er*pi/180.0_dp
     end if
 
   end do
@@ -904,32 +896,39 @@ subroutine TEBVSfunc(f,V,L,c,h,r,theta_e,phi_e,alpha,nu,c0,psi,trip,TEBVS)
 end subroutine TEBVSfunc
 
 ! Computing the overall sound pressure level (OASPL) of a turbine defined below (in dB)
-subroutine OASPL(n,ox,oy,oz,windvel,rpm,B,Hub,rad,c,c1,alpha,nu,c0,psi,AR,SPLoa)
+subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
+  rot,Vinf,velx,vely,wakex,wakey,SPLoa)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
-  integer, intent(in) :: n,B
-  real(dp), intent(in) :: ox,oy,oz,rpm,windvel,Hub,nu,c0,psi,AR
-  real(dp), dimension(n), intent(in) :: rad
+  integer, intent(in) :: n,p,B
+  real(dp), intent(in) :: ox,oy,oz,Hub,rad,nu,c0,psi,AR,rot,Vinf
+  real(dp), dimension(n), intent(in) :: high
   real(dp), dimension(n-1), intent(in) :: c,c1,alpha
+  real(dp), dimension(p), intent(in) :: velx,vely,wakex,wakey
   ! out
   real(dp), intent(out) :: SPLoa
   ! local
   integer :: nf,bf,i,j,k,bi,di
-  real(dp) :: pi,omega,atip,B_int,TBLTE,TBLTV,LBLVS,TEBVS
-  real(dp), dimension(n-1) :: L,d,V,h,r,theta_e,phi_e
+  real(dp) :: pi,atip1,atip2,B_int,theta,V,Vn,Vt,velxx,velyy,velwx,velwy,rotdir,omega
+  real(dp) :: TBLTE,TBLTV,LBLVS,TEBVS
+  real(dp), dimension(n-1) :: L,highmid,h,r,theta_e,phi_e
   real(dp), dimension((n-1)*B) :: TE_t,BLVS_t,BVS_t
-  real(dp), dimension(B) :: TV_t
+  real(dp), dimension(B*2) :: TV_t
   real(dp), dimension(27) :: f,TE,TV,BLVS,BVS,SPLf,AdB
-  real(dp), dimension(3) :: beta,SPLoa_d
+  real(dp), dimension(8) :: beta,SPLoa_d
+  real(dp), dimension(p) :: theta_vel
   logical :: trip,tipflat
+  intrinsic sin
+  intrinsic cos
+  intrinsic abs
   intrinsic sqrt
   intrinsic sum
   intrinsic log10
   ! constants
   pi = 3.1415926535897932_dp
   nf = 27
-  bf = 3
+  bf = 8
 
   ! Using untripped or tripped boundary layer specficiation
   trip = .false. ! untripped
@@ -939,21 +938,24 @@ subroutine OASPL(n,ox,oy,oz,windvel,rpm,B,Hub,rad,c,c1,alpha,nu,c0,psi,AR,SPLoa)
   tipflat = .false. ! round
   ! tipflat = .true. ! flat
 
-  ! Parameters of the wind turbine
-  omega = (rpm*2.0_dp*pi)/60.0_dp  ! angular velocity (rad/sec)
-
   do i = 1,n-1
-    L(i) = rad(i+1)-rad(i) ! length of each radial section (m)
-    d(i) = rad(i) ! radial section to be used in directivity calculations (m)
-    V(i) = sqrt((omega*rad(i))**2+windvel**2) ! wind speed over the blade (m/s)
+    L(i) = high(i+1)-high(i) ! length of each height section (m)
+    highmid(i) = (high(i+1)+high(i))/2.0_dp ! length of each height section (m)
   end do
 
   h(1:n-1) = 0.01_dp*c(1:n-1)  ! trailing edge thickness; 1% of chord length (m)
-  atip = alpha(n-1)  ! angle of attack of the tip region (deg)
+  atip1 = alpha(1)  ! angle of attack of the tip region on bottom (deg)
+  atip2 = alpha(n-1)  ! angle of attack of the tip region on top (deg)
+
+  if (rot >= 0.0_dp) then
+    rotdir = 1.0_dp
+  else
+    rotdir = -1.0_dp
+  end if
 
   ! Blade rotation increments to rotate around (45 deg from Vargas paper)
-  ! beta = (/0.0_dp,0.25_dp*pi,0.5_dp*pi,0.75_dp*pi,pi,1.25_dp*pi,1.5_dp*pi,1.75_dp*pi/) ! 8 increments
-  beta = (/0.0_dp,2.0_dp*pi/9.0_dp,4.0_dp*pi/9.0_dp/) ! 3 increments (equivalent of 9 for 3 blades)
+  beta = (/0.0_dp,0.25_dp*pi,0.5_dp*pi,0.75_dp*pi,pi,1.25_dp*pi,1.5_dp*pi,1.75_dp*pi/) ! 8 increments
+  ! beta = (/0.0_dp,2.0_dp*pi/9.0_dp,4.0_dp*pi/9.0_dp/) ! 3 increments (equivalent of 9 for 3 blades)
   ! beta = (/0.0_dp,pi/) ! 2 increments
   ! beta = (/0.0_dp/) ! 1 increment (top blade facing straight up)
 
@@ -971,32 +973,67 @@ subroutine OASPL(n,ox,oy,oz,windvel,rpm,B,Hub,rad,c,c1,alpha,nu,c0,psi,AR,SPLoa)
   1.271_dp,1.202_dp,0.964_dp,0.556_dp,-0.114_dp,-1.144_dp,-2.488_dp,-4.250_dp,&
   -6.701_dp,-9.341_dp,-12.322_dp,-15.694_dp,-19.402_dp/)
 
+  theta_vel = (/5.0_dp,15.0_dp,25.0_dp,35.0_dp,45.0_dp,55.0_dp,65.0_dp,75.0_dp,&
+  85.0_dp,95.0_dp,105.0_dp,115.0_dp,125.0_dp,135.0_dp,145.0_dp,155.0_dp,165.0_dp,&
+  175.0_dp,185.0_dp,195.0_dp,205.0_dp,215.0_dp,225.0_dp,235.0_dp,245.0_dp,255.0_dp,&
+  265.0_dp,275.0_dp,285.0_dp,295.0_dp,305.0_dp,315.0_dp,325.0_dp,335.0_dp,&
+  345.0_dp,355.0_dp/)
+
   do di=1,bf ! for each rotation increment
     do j=1,nf ! for each frequency
       do bi=1,B ! for each blade
         ! Calcuating observer distances and directivty angles for the given blade orientation
-        call direct(n-1,ox,oy,oz,c,c1,d,Hub,beta(di)+(bi-1)*B_int,r,theta_e,phi_e)
+        theta = beta(di)+(bi-1)*B_int
+        call direct(n-1,ox,oy,oz,c,c1,highmid,rad,Hub,rotdir,theta,&
+        r,theta_e,phi_e)
 
-        call TBLTVfunc(f(j),V(n-1),c(n-1),r(n-1),theta_e(n-1),phi_e(n-1),atip,c0,&
+        if ((theta >= 5.0_dp) .and. (theta <= 335.0_dp)) then
+          call splineint(p,theta_vel,velx,theta,velxx)
+          call splineint(p,theta_vel,vely,theta,velyy)
+          call splineint(p,theta_vel,wakex,theta,velwx)
+          call splineint(p,theta_vel,wakey,theta,velwy)
+        else
+          velxx = (velx(1)+velx(p))/2.0_dp
+          velyy = (vely(1)+vely(p))/2.0_dp
+          velwx = (wakex(1)+wakex(p))/2.0_dp
+          velwy = (wakey(1)+wakey(p))/2.0_dp
+        end if
+
+        ! Vn = Vinf*(1.0_dp+velxx)*sin(theta*pi/180.0_dp)-Vinf*velyy*cos(theta*pi/180.0_dp)
+        ! Vt = rotdir*(Vinf*(1.0_dp+velxx)*cos(theta*pi/180.0_dp)+&
+        ! Vinf*velyy*sin(theta*pi/180.0_dp))+abs(rot)*rad
+
+        Vn = (Vinf*(1.0_dp+velxx)+velwx)*sin(theta*pi/180.0_dp)-&
+        (Vinf*velyy+velwy)*cos(theta*pi/180.0_dp)
+        Vt = rotdir*((Vinf*(1.0_dp+velxx)+velwx)*cos(theta*pi/180.0_dp)+&
+        (Vinf*velyy+velwy)*sin(theta*pi/180.0_dp))+abs(rot)*rad
+
+        V = sqrt(Vn**2+Vt**2)
+
+        call TBLTVfunc(f(j),V,c(1),r(1),theta_e(1),phi_e(1),atip1,c0,&
         tipflat,AR,TBLTV)
-        TV_t(bi) = TBLTV
+        TV_t(2*(bi-1)+1) = TBLTV
+        call TBLTVfunc(f(j),V,c(n-1),r(n-1),theta_e(n-1),phi_e(n-1),atip2,c0,&
+        tipflat,AR,TBLTV)
+        TV_t(2*(bi-1)+2) = TBLTV
         do k=1,n-1
           ! Calculating sound pressure level (dB) for each noise source at each radial position
-          call TBLTEfunc(f(j),V(k),L(k),c(k),r(k),theta_e(k),phi_e(k),alpha(k),&
+          call TBLTEfunc(f(j),V,L(k),c(k),r(k),theta_e(k),phi_e(k),alpha(k),&
           nu,c0,trip,TBLTE)
           if (trip .eqv. .false.) then
-            call LBLVSfunc(f(j),V(k),L(k),c(k),r(k),theta_e(k),phi_e(k),alpha(k),&
+            call LBLVSfunc(f(j),V,L(k),c(k),r(k),theta_e(k),phi_e(k),alpha(k),&
             nu,c0,trip,LBLVS)
           else
             LBLVS = 0.0_dp
           end if
-          call TEBVSfunc(f(j),V(k),L(k),c(k),h(k),r(k),theta_e(k),phi_e(k),&
+          call TEBVSfunc(f(j),V,L(k),c(k),h(k),r(k),theta_e(k),phi_e(k),&
           alpha(k),nu,c0,psi,trip,TEBVS)
 
           ! Assigning noise to blade segment
           TE_t(k+(n-1)*(bi-1)) = TBLTE
           BLVS_t(k+(n-1)*(bi-1)) = LBLVS
           BVS_t(k+(n-1)*(bi-1)) = TEBVS
+
         end do
       end do
 
@@ -1029,17 +1066,18 @@ subroutine OASPL(n,ox,oy,oz,windvel,rpm,B,Hub,rad,c,c1,alpha,nu,c0,psi,AR,SPLoa)
 end subroutine OASPL
 
 ! Placing a turbine in a specified location and finding the OASPL of the turbine with reference to an observer
-subroutine turbinepos(nturb,nseg,nobs,x,y,obs,winddir,windvel,rpm,B,Hub,&
-  rad,c,c1,alpha,nu,c0,psi,AR,noise_corr,SPL_obs)
+subroutine turbinepos(nturb,nseg,nobs,p,x,y,obs,winddir,B,Hub,high,&
+  rad,c,c1,alpha,nu,c0,psi,AR,noise_corr,rot,Vinf,velx,vely,wakex,wakey,SPL_obs)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
-  integer, intent(in) :: nturb,nseg,nobs,B
-  real(dp), intent(in) :: winddir,Hub,nu,c0,psi,AR,noise_corr
-  real(dp), dimension(nturb), intent(in) :: x,y,rpm,windvel
+  integer, intent(in) :: nturb,nseg,nobs,p,B
+  real(dp), intent(in) :: winddir,Hub,rad,nu,c0,psi,AR,noise_corr,Vinf
+  real(dp), dimension(nturb), intent(in) :: x,y,rot
   real(dp), dimension(nobs), intent(in) :: obs
-  real(dp), dimension(nseg), intent(in) :: rad
+  real(dp), dimension(nseg), intent(in) :: high
   real(dp), dimension(nseg-1), intent(in) :: c,c1,alpha
+  real(dp), dimension(p), intent(in) :: velx,vely,wakex,wakey
   ! out
   real(dp), intent(out) :: SPL_obs
   ! local
@@ -1055,7 +1093,7 @@ subroutine turbinepos(nturb,nseg,nobs,x,y,obs,winddir,windvel,rpm,B,Hub,&
   ! constants
   pi = 3.1415926535897932_dp
 
-  windrad = winddir*pi/180.0_dp
+  windrad = (winddir+180.0_dp)*pi/180.0_dp
 
   do i = 1,nturb ! for each turbine
     ! Centering the turbine at (0,0) with repect to the observer location
@@ -1063,7 +1101,7 @@ subroutine turbinepos(nturb,nseg,nobs,x,y,obs,winddir,windvel,rpm,B,Hub,&
     oy = obs(2)-y(i)
     oz = obs(3)
 
-    ! Adjusting the coordinates to turbine reference frame (wind moving in y-direction)
+    ! Adjusting the coordinates to turbine reference frame (wind moving in positive y-direction)
     rxy = sqrt(ox**2+oy**2)
     ang = atan2(oy,ox)+windrad
 
@@ -1071,7 +1109,9 @@ subroutine turbinepos(nturb,nseg,nobs,x,y,obs,winddir,windvel,rpm,B,Hub,&
     oy = rxy*sin(ang)
 
     ! Calculating the overall SPL of each of the turbines at the observer location
-    call OASPL(nseg,ox,oy,oz,windvel(i),rpm(i),B,Hub,rad,c,c1,alpha,nu,c0,psi,AR,tSPL(i))
+    call OASPL(nseg,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,&
+    AR,rot(i),Vinf,velx,vely,wakex,wakey,tSPL(i))
+
   end do
 
   ! Combining the SPLs from each turbine and correcting the value based on the wind farm
@@ -1079,6 +1119,7 @@ subroutine turbinepos(nturb,nseg,nobs,x,y,obs,winddir,windvel,rpm,B,Hub,&
 
 end subroutine turbinepos
 
+
 ! To build for Python interface:
-! f2py -c  --opt=-O2 -m _bpmacoustic BPM_Acoustic_Model.f90
-! python C:\Python27\Scripts\f2py.py -c --opt=-O2 --compiler=mingw32 --fcompiler=gfortran -m _bpmacoustic BPM_Acoustic_Model.f90
+! f2py -c  --opt=-O2 -m _bpmvawtacoustic BPM_VAWT_Acoustic_Model.f90
+! python C:\Python27\Scripts\f2py.py -c --opt=-O2 --compiler=mingw32 --fcompiler=gfortran -m _bpmvawtacoustic BPM_VAWT_Acoustic_Model.f90
