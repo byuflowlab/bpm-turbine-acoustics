@@ -1077,13 +1077,14 @@ subroutine turbinepos(nturb,nseg,nobs,p,x,y,obs,winddir,B,Hub,high,&
   real(dp), dimension(nobs), intent(in) :: obs
   real(dp), dimension(nseg), intent(in) :: high
   real(dp), dimension(nseg-1), intent(in) :: c,c1,alpha
-  real(dp), dimension(p), intent(in) :: velx,vely,wakex,wakey
+  real(dp), dimension(p*nturb), intent(in) :: velx,vely,wakex,wakey
   ! out
   real(dp), intent(out) :: SPL_obs
   ! local
-  integer :: i
+  integer :: i,j,k
   real(dp) :: pi,windrad,ox,oy,oz,rxy,ang
   real(dp), dimension(nturb) :: tSPL
+  real(dp), dimension(p) :: velxd,velyd,wakexd,wakeyd
   intrinsic sqrt
   intrinsic sin
   intrinsic cos
@@ -1108,9 +1109,17 @@ subroutine turbinepos(nturb,nseg,nobs,p,x,y,obs,winddir,B,Hub,high,&
     ox = rxy*cos(ang)
     oy = rxy*sin(ang)
 
+    do j = 1,p
+      k = p*(i-1)+j
+      velxd(j) = velx(k)
+      velyd(j) = vely(k)
+      wakexd(j) = wakex(k)
+      wakeyd(j) = wakey(k)
+    end do
+
     ! Calculating the overall SPL of each of the turbines at the observer location
     call OASPL(nseg,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,&
-    AR,rot(i),Vinf,velx,vely,wakex,wakey,tSPL(i))
+    AR,rot(i),Vinf,velxd,velyd,wakexd,wakeyd,tSPL(i))
 
   end do
 
