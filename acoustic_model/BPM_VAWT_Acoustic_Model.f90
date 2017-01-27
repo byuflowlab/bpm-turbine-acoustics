@@ -910,7 +910,7 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
   real(dp), intent(out) :: SPLoa
   ! local
   integer :: nf,bf,i,j,k,bi,di
-  real(dp) :: pi,atip1,atip2,B_int,theta,V,Vn,Vt,velxx,velyy,velwx,velwy,rotdir,omega
+  real(dp) :: pi,atip1,atip2,B_int,theta,V,Vn,Vt,velxx,velyy,velwx,velwy,rotdir
   real(dp) :: TBLTE,TBLTV,LBLVS,TEBVS
   real(dp), dimension(n-1) :: L,highmid,h,r,theta_e,phi_e
   real(dp), dimension((n-1)*B) :: TE_t,BLVS_t,BVS_t
@@ -921,7 +921,6 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
   logical :: trip,tipflat
   intrinsic sin
   intrinsic cos
-  intrinsic abs
   intrinsic sqrt
   intrinsic sum
   intrinsic log10
@@ -999,15 +998,12 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
           velwy = (wakey(1)+wakey(p))/2.0_dp
         end if
 
-        ! Vn = Vinf*(1.0_dp+velxx)*sin(theta*pi/180.0_dp)-Vinf*velyy*cos(theta*pi/180.0_dp)
-        ! Vt = rotdir*(Vinf*(1.0_dp+velxx)*cos(theta*pi/180.0_dp)+&
-        ! Vinf*velyy*sin(theta*pi/180.0_dp))+abs(rot)*rad
-
+        ! Calculating normal and tangential velocity components over the blades
         Vn = (Vinf*(1.0_dp+velxx)+velwx)*sin(theta*pi/180.0_dp)-&
         (Vinf*velyy+velwy)*cos(theta*pi/180.0_dp)
         Vt = rotdir*((Vinf*(1.0_dp+velxx)+velwx)*cos(theta*pi/180.0_dp)+&
-        (Vinf*velyy+velwy)*sin(theta*pi/180.0_dp))+abs(rot)*rad
-
+        (Vinf*velyy+velwy)*sin(theta*pi/180.0_dp))+rot*rad
+        ! Calculating total velocity component
         V = sqrt(Vn**2+Vt**2)
 
         call TBLTVfunc(f(j),V,c(1),r(1),theta_e(1),phi_e(1),atip1,c0,&
