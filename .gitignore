@@ -16,3 +16,5 @@
 /acoustic_model/bpmacoustic.egg-info/*
 /acoustic_model/BPM_Acoustic_Model.egg-info/*
 /acoustic_model/bpmvawtacoustic.egg-info/*
+
+/acoustic_model/optimization/_florisunify.so.dSYM/*

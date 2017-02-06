@@ -4,7 +4,9 @@ This folder contains the optimization codes used to run the BPM acoustics model 
 
     $ python Optimization.py [SPL limit value (dB)]
 
-This older version of the FLORIS model was used in the optimizations used for our specific publication, but a new version of the codes along with more detailed instructions at: https://github.com/wisdem/florisse. Also required for the optimization is CCBlade, of which the older version using in our optimizations, is included, but the newer version can be found at: https://github.com/wisdem/ccblade. All optimizations were run with SNOPT, a Python optimization code, which is also required to run the optimization code. The following instructions outline how to build the FLORIS codes for use in reference with the BPM code (copied from https://github.com/WISDEM/FLORISSE/tree/develop).
+The optimization can also be run using a hardcoded SPL limit found at line 271 and commenting out line 270. Two example wind farms (Lissett Airfield Wind Farm and Rosiere Wind Farm) can be used as the initial layouts can can be chosen at lines 274 and 275. For faster SPL calculations, the joblib module is implemented and can be commented in or out on lines 120 and 121 (https://pythonhosted.org/joblib/).
+
+This older version of the FLORIS model was used in the optimizations used for our specific publication, but a new version of the codes along with more detailed instructions at: https://github.com/wisdem/florisse. Also required for the optimization is CCBlade, of which the older version using in our optimizations, is included, but the newer version can be found at: https://github.com/wisdem/ccblade. All optimizations were run with SNOPT, a Python optimization code, which is also required to run the optimization code. The following instructions outline how to build the FLORIS codes for use in reference with the BPM code (copied from https://github.com/WISDEM/FLORISSE/tree/develop). The newer adjustments require joblib to run the code with parallelization.
 
 Implementation of the FLOw Redirection and Induction in Steady-state (FLORIS) wind farm wake model for WISDEM, written in Python.
 
@@ -27,7 +29,7 @@ REQUIRED PYTHON LIBRARIES:
 ### run the following commands from src/florisse:  
     $ gfortran -c adBuffer.f  
     $ gcc -c adStack.c  
-    $  f2py -c --opt=-O2 -m _florisunify florisUnified.f90 adBuffer.o adStack.o  
+    $ f2py -c --opt=-O2 -m _florisunify florisUnified.f90 adBuffer.o adStack.o  
 
 
 ## Installation instructions Windows  

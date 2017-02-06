@@ -19,16 +19,20 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib import rcParams
 rcParams['font.family'] = 'Times New Roman'
-import sys
+import time,sys
 
 import _bpmacoustic
 import _bpmvawtacoustic
 
-
 # Progress bar for plotting
-def progress_bar(percent):
+def progress_bar(percent,tasks,runtime):
     bar_long = 40
-    status = 'Working...'
+    timeleft = (runtime)*(tasks*(1.-percent))
+    if timeleft < 60.:
+        status = 'Working... '+str(int(timeleft))+' seconds left'
+    else:
+        timeleft = timeleft/60.
+        status = 'Working... '+str(int(timeleft))+' minutes left'
     if percent == 1:
         status = 'Complete\n'
     bar_seg = int(round(bar_long*percent))
@@ -137,7 +141,7 @@ if plot_dist == True:
         ##################################################################################
         ##################################################################################
         ##################################################################################
-        print 'Horizontal-axis Wind Turbine Acoustic Plotting:'
+        print '\nHorizontal-axis Wind Turbine Acoustic Plotting:'
         # Based on turbines found on Lissett Airfield Wind Farm
         # http://www.infinis.com/our-business/onshore-wind/our-operations/lissett-airfield/
         turbx = np.array([0.0])
@@ -177,11 +181,14 @@ if plot_dist == True:
         F = np.zeros((n, n))
 
         point = 0
+        time0 = time.time()
         for i in range(n):
             for j in range(n):
                 F[i,j] = _bpmacoustic.turbinepos(turbx, turby, np.array([X[i,j],Y[i,j],0.]), winddir, windvel, rpm, B, h, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr)
                 point += 1
-                progress_bar(float(point)/(n*n))
+                runtime = time.time()-time0
+                progress_bar(float(point)/(n*n),n*n,runtime)
+                time0 = time.time()
 
         fig = plt.figure(1,figsize=(8,7.8))
         fig.subplots_adjust(left=.12,right=.9,top=0.97,bottom=0.0)
@@ -210,7 +217,7 @@ if plot_dist == True:
         ##################################################################################
         ##################################################################################
         ##################################################################################
-        print 'Vertical-axis Wind Turbine Acoustic Plotting:'
+        print '\nVertical-axis Wind Turbine Acoustic Plotting:'
         # Mariah Windspire 1.2 kW
         div = 5
 
@@ -257,11 +264,15 @@ if plot_dist == True:
         F = np.zeros((n, n))
 
         point = 0
+        time0 = time.time()
         for i in range(n):
             for j in range(n):
+                time0 = time.time()
                 F[i,j] = _bpmvawtacoustic.turbinepos(36, turbx, turby, np.array([X[i,j],Y[i,j],0.]), winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, velx, vely, wakex, wakey)
                 point += 1
-                progress_bar(float(point)/(n*n))
+                runtime = time.time()-time0
+                progress_bar(float(point)/(n*n),n*n,runtime)
+                time0 = time.time()
 
         lb = 66.0 #lower bound on velocity to display
         ub = 75.0 #upper bound on velocity to display
