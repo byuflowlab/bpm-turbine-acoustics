@@ -29,10 +29,10 @@ def progress_bar(percent,tasks,runtime):
     bar_long = 40
     timeleft = (runtime)*(tasks*(1.-percent))
     if timeleft < 60.:
-        status = 'Working... '+str(int(timeleft))+' seconds left'
+        status = 'Working... '+str(int(timeleft))+' second(s) left'
     else:
         timeleft = timeleft/60.
-        status = 'Working... '+str(int(timeleft))+' minutes left'
+        status = 'Working... '+str(int(timeleft))+' minute(s) left'
     if percent == 1:
         status = 'Complete\n'
     bar_seg = int(round(bar_long*percent))
