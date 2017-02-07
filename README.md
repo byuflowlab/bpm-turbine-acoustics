@@ -38,5 +38,108 @@ python <\your\path\to\f2py.py> -c --opt=-O2 --compiler=mingw32 --fcompiler=gfort
 This python code can be run from another file using:
 ```python
 SPL_HAWT = _bpmacoustic.turbinepos(turbx, turby, obs, winddir, windvel, rpm, B, h, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr)
+"""
+Calculating the sound pressure level for a HAWT
+
+Parameters
+----------
+turbx : array
+    x-positions of all the turbines heard by an observer (east to west, meter)
+turby : array
+    y-positions of all the turbines heard by an observer (north to south, meter)
+obs : array
+    x-, y-, and z-position of a specified observer (E-W, N-S, height; meter)
+winddir : float
+    direction the wind blows from (180=N, 270=E, 0=S, 90=W; degree)
+windvel : array
+    wind velocity at each turbine in the specified wind direction (m/s)
+rpm : array
+    rotation rate of each turbine (RPM)
+B : float
+    number of blades on a turbine
+h : float
+    height of a turbine (meter)
+rad : array
+    radial positions of the blade geometry (meter)
+c : array
+    chord length at each radial segment (meter)
+c1 : array
+    distance from the pitch axis to leading edge at each radial segment (meter)
+alpha : array
+    angle of attack of each radial segment (degree)
+nu : float
+    kinematic viscosity of the air (m^2/s)
+c0 : float
+    speed of sound of the air (m/s)
+psi : float
+    solid angle of turbine blades between upper and lower sides of trailing edge (degree)
+AR : float
+    aspect ratio of turbine blades
+noise_corr : float
+    correction factor for SPL calculations (1=none, use if calculations differ from expected)
+
+Returns
+----------
+SPL_HAWT : float
+    sound pressure level calculated at observer location (dB)
+"""
+
 SPL_VAWT = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, obs, winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, velx, vely, wakex, wakey)
+"""
+Calculating the sound pressure level for a VAWT
+
+Parameters
+----------
+ntheta : int
+    number of points along blade flight path to calculate velocities
+turbx : array
+    x-positions of all the turbines heard by an observer (east to west, meter)
+turby : array
+    y-positions of all the turbines heard by an observer (north to south, meter)
+obs : array
+    x-, y-, and z-position of a specified observer (E-W, N-S, height; meter)
+winddir : float
+    direction the wind blows from (180=N, 270=E, 0=S, 90=W; degree)
+B : float
+    number of blades on a turbine
+Hub : float
+    hub height of a turbine (meter)
+high : array
+    height positions along the turbine blade (meter)
+rad : float
+    turbine radius (meter)
+c : array
+    chord length at each radial segment (meter)
+c1 : array
+    distance from the pitch axis to leading edge at each radial segment (meter)
+alpha : array
+    angle of attack of each radial segment (degree)
+nu : float
+    kinematic viscosity of the air (m^2/s)
+c0 : float
+    speed of sound of the air (m/s)
+psi : float
+    solid angle of turbine blades between upper and lower sides of trailing edge (degree)
+AR : float
+    aspect ratio of turbine blades
+noise_corr : float
+    correction factor for SPL calculations (1=none, use if calculations differ from expected)
+rot : array
+    rotation rate of each turbine (rad/s)
+velf : float
+    free stream wind speed (m/s)
+velx : array
+    the self-induced x-velocity of the turbine at each point along blade flight path (m/s)
+vely : array
+    the self-induced y-velocity of the turbine at each point along blade flight path (m/s)
+wakex : array
+    the wake influenced x-velcoity of the turbine at each point along the blade flight path (m/s)
+wakey : array
+    the wake influenced y-velcoity of the turbine at each point along the blade flight path (m/s)
+
+Returns
+----------
+SPL_VAWT : float
+    sound pressure level calculated at observer location (dB)
+"""
 ```

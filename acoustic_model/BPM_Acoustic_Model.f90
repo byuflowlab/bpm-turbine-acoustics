@@ -1055,7 +1055,7 @@ subroutine turbinepos(nturb,nseg,nobs,x,y,obs,winddir,windvel,rpm,B,Hub,&
   ! constants
   pi = 3.1415926535897932_dp
 
-  windrad = winddir*pi/180.0_dp
+  windrad = (winddir+180.0_dp)*pi/180.0_dp
 
   do i = 1,nturb ! for each turbine
     ! Centering the turbine at (0,0) with repect to the observer location
