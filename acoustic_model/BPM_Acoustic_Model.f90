@@ -94,31 +94,31 @@ subroutine cubspline(x1,x2,x3,y1,y2,y3,xval,yval)
     b2 = 3.0_dp*(((y2-y1)/(x2-x1)**2)+((y3-y2)/(x3-x2)**2))
     b3 = 3.0_dp*(y3-y2)/(x3-x2)**2
 
-    bot = a11*a22*a33 + a12*a23*a31 + a13*a21*a32 - a13*a22*a31 - a12*a21*a33 - a11*a23*a32
+    bot = a11*a22*a33+a12*a23*a31+a13*a21*a32-a13*a22*a31-a12*a21*a33-a11*a23*a32
     if (xval < x2) then
-      xtop = b1*a22*a33 + a12*a23*b3 + a13*b2*a32 - a13*a22*b3 - a12*b2*a33 - b1*a23*a32
-      ytop = a11*b2*a33 + b1*a23*a31 + a13*a21*b3 - a13*b2*a31 - b1*a21*a33 - a11*a23*b3
+      xtop = b1*a22*a33+a12*a23*b3+a13*b2*a32-a13*a22*b3-a12*b2*a33-b1*a23*a32
+      ytop = a11*b2*a33+b1*a23*a31+a13*a21*b3-a13*b2*a31-b1*a21*a33-a11*a23*b3
 
       k1 = xtop/bot
       k2 = ytop/bot
 
-      a = k1*(x2-x1) - (y2-y1)
-      b = -k2*(x2-x1) + (y2-y1)
+      a = k1*(x2-x1)-(y2-y1)
+      b = -k2*(x2-x1)+(y2-y1)
       t = (xval-x1)/(x2-x1)
 
-      yval = (1.0_dp - t)*y1 + t*y2 + t*(1.0_dp - t)*(a*(1.0_dp - t) + b*t)
+      yval = (1.0_dp-t)*y1+t*y2+t*(1.0_dp-t)*(a*(1.0_dp-t)+b*t)
     else
-      ytop = a11*b2*a33 + b1*a23*a31 + a13*a21*b3 - a13*b2*a31 - b1*a21*a33 - a11*a23*b3
-      ztop = a11*a22*b3 + a12*b2*a31 + b1*a21*a32 - b1*a22*a31 - a12*a21*b3 - a11*b2*a32
+      ytop = a11*b2*a33+b1*a23*a31+a13*a21*b3-a13*b2*a31-b1*a21*a33-a11*a23*b3
+      ztop = a11*a22*b3+a12*b2*a31+b1*a21*a32-b1*a22*a31-a12*a21*b3-a11*b2*a32
 
       k2 = ytop/bot
       k3 = ztop/bot
 
-      a = k2*(x3-x2) - (y3-y2)
-      b = -k3*(x3-x2) + (y3-y2)
+      a = k2*(x3-x2)-(y3-y2)
+      b = -k3*(x3-x2)+(y3-y2)
       t = (xval-x2)/(x3-x2)
 
-      yval = (1.0_dp - t)*y2 + t*y3 + t*(1.0_dp - t)*(a*(1.0_dp - t) + b*t)
+      yval = (1.0_dp-t)*y2+t*y3+t*(1.0_dp-t)*(a*(1.0_dp-t)+b*t)
     end if
 
 end subroutine cubspline
@@ -147,12 +147,12 @@ subroutine direct(n,xt,yt,zt,c,c1,d,Hub,beta,r,theta_e,phi_e)
   pi = 3.1415926535897932_dp
 
   ! distance from pitch-axis to trailing edge
-  c2(1:n) = c(1:n) - c1(1:n)
+  c2(1:n) = c(1:n)-c1(1:n)
 
   ! Calculating observer location from hub
-  xo = xt
-  yo = yt
-  zo = zt-Hub
+  xo = xt ! lateral direction
+  yo = yt ! downstream direction
+  zo = zt-Hub ! height direction
 
   do i=1,n
     ! Calculating trailing edge position from hub
@@ -164,7 +164,7 @@ subroutine direct(n,xt,yt,zt,c,c1,d,Hub,beta,r,theta_e,phi_e)
     ze_d = zo-zs
 
     ! Rotating observer position with repsect to beta
-    theta = pi - beta
+    theta = pi-beta
     xe = cos(theta)*xe_d+sin(theta)*ze_d
     ze = -sin(theta)*xe_d+cos(theta)*ze_d
 
@@ -181,7 +181,7 @@ subroutine direct(n,xt,yt,zt,c,c1,d,Hub,beta,r,theta_e,phi_e)
         sign = -1
       end if
       phi_er = abs(phi_e(i))*180.0_dp/pi
-      phi_er = 0.1_dp*phi_er**2 + 2.5_dp
+      phi_er = 0.1_dp*phi_er**2+2.5_dp
       phi_e(i) = sign*phi_er*pi/180.0_dp
     else if (abs(phi_e(i)) > 175.0_dp*pi/180.0_dp) then
       if (phi_e(i) >= 0.0_dp) then
@@ -190,7 +190,7 @@ subroutine direct(n,xt,yt,zt,c,c1,d,Hub,beta,r,theta_e,phi_e)
         sign = -1
       end if
       phi_er = abs(phi_e(i))*180.0_dp/pi
-      phi_er = -0.1_dp*(phi_er - 180.0_dp)**2 + 177.5_dp
+      phi_er = -0.1_dp*(phi_er-180.0_dp)**2+177.5_dp
       phi_e(i) = sign*phi_er*pi/180.0_dp
     end if
 
@@ -849,8 +849,8 @@ subroutine TEBVSfunc(f,V,L,c,h,r,theta_e,phi_e,alpha,nu,c0,psi,trip,TEBVS)
   end if
 
   ! boundary layer on pressure side- thickness, displacement thickness
-  dpr = d0*(10.0_dp**(-0.04175_dp*alpha + 0.00106_dp*alpha**2))
-  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha + 0.00113_dp*alpha**2))
+  dpr = d0*(10.0_dp**(-0.04175_dp*alpha+0.00106_dp*alpha**2))
+  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha+0.00113_dp*alpha**2))
 
   if (trip .eqv. .false.) then
     ! UNTRIPPED boundary layer on suction side- displacement thickness
@@ -1012,7 +1012,7 @@ subroutine OASPL(n,ox,oy,oz,windvel,rpm,B,Hub,rad,c,c1,alpha,nu,c0,psi,AR,SPLoa)
     end do
 
     ! Correcting with A-weighting
-    SPLf(1:nf) = SPLf(1:nf) + AdB(1:nf)
+    SPLf(1:nf) = SPLf(1:nf)+AdB(1:nf)
 
     ! Adding SPLs for each rotation increment
     SPLoa_d(di) = 10.0_dp*log10(sum(10.0_dp**(SPLf/10.0_dp)))

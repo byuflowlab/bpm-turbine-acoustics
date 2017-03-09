@@ -1,7 +1,7 @@
 ! Subroutine to use the BPM equations for turbine acoustics
 ! Modified for an H-rotor vertical-axis wind turbine
 
-! cubic spline interpolation setup (for Tip Vortex Noise)
+! cubic spline interpolation setup
 subroutine splineint(n,x,y,xval,yval)
     implicit none
 
@@ -67,6 +67,7 @@ subroutine splineint(n,x,y,xval,yval)
 
 end subroutine splineint
 
+! cubic spline interpolation
 subroutine cubspline(x1,x2,x3,y1,y2,y3,xval,yval)
     implicit none
 
@@ -95,31 +96,31 @@ subroutine cubspline(x1,x2,x3,y1,y2,y3,xval,yval)
     b2 = 3.0_dp*(((y2-y1)/(x2-x1)**2)+((y3-y2)/(x3-x2)**2))
     b3 = 3.0_dp*(y3-y2)/(x3-x2)**2
 
-    bot = a11*a22*a33 + a12*a23*a31 + a13*a21*a32 - a13*a22*a31 - a12*a21*a33 - a11*a23*a32
+    bot = a11*a22*a33+a12*a23*a31+a13*a21*a32-a13*a22*a31-a12*a21*a33-a11*a23*a32
     if (xval < x2) then
-      xtop = b1*a22*a33 + a12*a23*b3 + a13*b2*a32 - a13*a22*b3 - a12*b2*a33 - b1*a23*a32
-      ytop = a11*b2*a33 + b1*a23*a31 + a13*a21*b3 - a13*b2*a31 - b1*a21*a33 - a11*a23*b3
+      xtop = b1*a22*a33+a12*a23*b3+a13*b2*a32-a13*a22*b3-a12*b2*a33-b1*a23*a32
+      ytop = a11*b2*a33+b1*a23*a31+a13*a21*b3-a13*b2*a31-b1*a21*a33-a11*a23*b3
 
       k1 = xtop/bot
       k2 = ytop/bot
 
-      a = k1*(x2-x1) - (y2-y1)
-      b = -k2*(x2-x1) + (y2-y1)
+      a = k1*(x2-x1)-(y2-y1)
+      b = -k2*(x2-x1)+(y2-y1)
       t = (xval-x1)/(x2-x1)
 
-      yval = (1.0_dp - t)*y1 + t*y2 + t*(1.0_dp - t)*(a*(1.0_dp - t) + b*t)
+      yval = (1.0_dp-t)*y1+t*y2+t*(1.0_dp-t)*(a*(1.0_dp-t)+b*t)
     else
-      ytop = a11*b2*a33 + b1*a23*a31 + a13*a21*b3 - a13*b2*a31 - b1*a21*a33 - a11*a23*b3
-      ztop = a11*a22*b3 + a12*b2*a31 + b1*a21*a32 - b1*a22*a31 - a12*a21*b3 - a11*b2*a32
+      ytop = a11*b2*a33+b1*a23*a31+a13*a21*b3-a13*b2*a31-b1*a21*a33-a11*a23*b3
+      ztop = a11*a22*b3+a12*b2*a31+b1*a21*a32-b1*a22*a31-a12*a21*b3-a11*b2*a32
 
       k2 = ytop/bot
       k3 = ztop/bot
 
-      a = k2*(x3-x2) - (y3-y2)
-      b = -k3*(x3-x2) + (y3-y2)
+      a = k2*(x3-x2)-(y3-y2)
+      b = -k3*(x3-x2)+(y3-y2)
       t = (xval-x2)/(x3-x2)
 
-      yval = (1.0_dp - t)*y2 + t*y3 + t*(1.0_dp - t)*(a*(1.0_dp - t) + b*t)
+      yval = (1.0_dp-t)*y2+t*y3+t*(1.0_dp-t)*(a*(1.0_dp-t)+b*t)
     end if
 
 end subroutine cubspline
@@ -136,7 +137,7 @@ subroutine direct(n,xt,yt,zt,c,c1,ht,rad,Hub,rotdir,beta,r,theta_e,phi_e)
   real(dp), dimension(n), intent(out) :: r,theta_e,phi_e
   ! local
   integer :: i,sign
-  real(dp) :: pi,xo,yo,zo,xs,ys,xe,ye,ze,theta_er
+  real(dp) :: pi,xo,yo,zo,xs,ys,zs,xe_d,ye_d,theta,xe,ye,ze,theta_er,phi_er
   real(dp), dimension(n) :: c2
   intrinsic sin
   intrinsic cos
@@ -147,34 +148,41 @@ subroutine direct(n,xt,yt,zt,c,c1,ht,rad,Hub,rotdir,beta,r,theta_e,phi_e)
   pi = 3.1415926535897932_dp
 
   ! distance from pitch-axis to trailing edge
-  c2(1:n) = c(1:n) - c1(1:n)
+  c2(1:n) = c(1:n)-c1(1:n)
 
   ! Calculating observer location from hub
-  xo = xt
-  yo = yt
-  zo = zt - Hub
+  xo = xt ! lateral direction
+  yo = yt ! downstream direction
+  zo = zt-Hub ! height direction
 
   do i=1,n
     ! Calculating trailing edge position from hub
     if (rotdir >= 0.0_dp) then
       xs = -rad*cos(beta)-c2(i)*sin(beta)
       ys = -rad*sin(beta)+c2(i)*cos(beta)
+      zs = ht(i)
     else
-      xs = -rad*cos(-beta)+c2(i)*sin(-beta)
-      ys = -rad*sin(-beta)-c2(i)*cos(-beta)
+      xs = -rad*cos(beta)+c2(i)*sin(beta)
+      ys = -rad*sin(beta)-c2(i)*cos(beta)
+      zs = ht(i)
     end if
 
     ! Calculating observer position from trailing edge
-    xe = xo-xs
-    ye = yo-ys
-    ze = zo-ht(i)
+    xe_d = xo-xs
+    ye_d = yo-ys
+    ze = zo-zs
+
+    ! Rotating observer position with repsect to beta
+    theta = rotdir*(pi/2.0_dp)+beta
+    xe = cos(theta)*xe_d+sin(theta)*ye_d
+    ye = -sin(theta)*xe_d+cos(theta)*ye_d
 
     ! Calculating observer distance and directivity angles
     r(i) = sqrt(xe**2+ye**2+ze**2)
-    theta_e(i) = atan2(xe,ye)+beta
-    phi_e(i) = atan2(sqrt(xe**2+ye**2),ze)
+    theta_e(i) = atan2(sqrt(ye**2+ze**2),xe)
+    phi_e(i) = atan2(ye,ze)
 
-    ! Quadratic smoothing when theta_e is close to 0 or 180 degrees
+    ! Quadratic smoothing when theta_e or phi_e are close to 0, +/-180 degrees
     if (abs(theta_e(i)) < 5.0_dp*pi/180.0_dp) then
       if (theta_e(i) >= 0.0_dp) then
         sign = 1
@@ -182,8 +190,36 @@ subroutine direct(n,xt,yt,zt,c,c1,ht,rad,Hub,rotdir,beta,r,theta_e,phi_e)
         sign = -1
       end if
       theta_er = abs(theta_e(i))*180.0_dp/pi
-      theta_er = 0.1_dp*theta_er**2 + 2.5_dp
+      theta_er = 0.1_dp*theta_er**2+2.5_dp
       theta_e(i) = sign*theta_er*pi/180.0_dp
+    else if (abs(theta_e(i)) > 175.0_dp*pi/180.0_dp) then
+      if (theta_e(i) >= 0.0_dp) then
+        sign = 1
+      else
+        sign = -1
+      end if
+      theta_er = abs(theta_e(i))*180.0_dp/pi
+      theta_er = -0.1_dp*(theta_er-180.0_dp)**2+177.5_dp
+      theta_e(i) = sign*theta_er*pi/180.0_dp
+    end if
+    if (abs(phi_e(i)) < 5.0_dp*pi/180.0_dp) then
+      if (phi_e(i) >= 0.0_dp) then
+        sign = 1
+      else
+        sign = -1
+      end if
+      phi_er = abs(phi_e(i))*180.0_dp/pi
+      phi_er = 0.1_dp*phi_er**2+2.5_dp
+      phi_e(i) = sign*phi_er*pi/180.0_dp
+    else if (abs(phi_e(i)) > 175.0_dp*pi/180.0_dp) then
+      if (phi_e(i) >= 0.0_dp) then
+        sign = 1
+      else
+        sign = -1
+      end if
+      phi_er = abs(phi_e(i))*180.0_dp/pi
+      phi_er = -0.1_dp*(phi_er-180.0_dp)**2+177.5_dp
+      phi_e(i) = sign*phi_er*pi/180.0_dp
     end if
 
   end do
@@ -841,8 +877,8 @@ subroutine TEBVSfunc(f,V,L,c,h,r,theta_e,phi_e,alpha,nu,c0,psi,trip,TEBVS)
   end if
 
   ! boundary layer on pressure side- thickness, displacement thickness
-  dpr = d0*(10.0_dp**(-0.04175_dp*alpha + 0.00106_dp*alpha**2))
-  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha + 0.00113_dp*alpha**2))
+  dpr = d0*(10.0_dp**(-0.04175_dp*alpha+0.00106_dp*alpha**2))
+  dp_d = d0_d*(10.0_dp**(-0.0432_dp*alpha+0.00113_dp*alpha**2))
 
   if (trip .eqv. .false.) then
     ! UNTRIPPED boundary layer on suction side- displacement thickness
@@ -924,6 +960,7 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
   intrinsic sqrt
   intrinsic sum
   intrinsic log10
+  intrinsic abs
   ! constants
   pi = 3.1415926535897932_dp
   nf = 27
@@ -972,11 +1009,9 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
   1.271_dp,1.202_dp,0.964_dp,0.556_dp,-0.114_dp,-1.144_dp,-2.488_dp,-4.250_dp,&
   -6.701_dp,-9.341_dp,-12.322_dp,-15.694_dp,-19.402_dp/)
 
-  theta_vel = (/5.0_dp,15.0_dp,25.0_dp,35.0_dp,45.0_dp,55.0_dp,65.0_dp,75.0_dp,&
-  85.0_dp,95.0_dp,105.0_dp,115.0_dp,125.0_dp,135.0_dp,145.0_dp,155.0_dp,165.0_dp,&
-  175.0_dp,185.0_dp,195.0_dp,205.0_dp,215.0_dp,225.0_dp,235.0_dp,245.0_dp,255.0_dp,&
-  265.0_dp,275.0_dp,285.0_dp,295.0_dp,305.0_dp,315.0_dp,325.0_dp,335.0_dp,&
-  345.0_dp,355.0_dp/)
+  do i = 1,p
+    theta_vel(i) = (2.0_dp*pi/p)*i-(2.0_dp*pi/p)/2.0_dp
+  end do
 
   do di=1,bf ! for each rotation increment
     do j=1,nf ! for each frequency
@@ -986,7 +1021,7 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
         call direct(n-1,ox,oy,oz,c,c1,highmid,rad,Hub,rotdir,theta,&
         r,theta_e,phi_e)
 
-        if ((theta >= 5.0_dp) .and. (theta <= 335.0_dp)) then
+        if ((theta >= theta_vel(1)) .and. (theta <= theta_vel(p))) then
           call splineint(p,theta_vel,velx,theta,velxx)
           call splineint(p,theta_vel,vely,theta,velyy)
           call splineint(p,theta_vel,wakex,theta,velwx)
@@ -999,10 +1034,10 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
         end if
 
         ! Calculating normal and tangential velocity components over the blades
-        Vn = (Vinf*(1.0_dp+velxx)+velwx)*sin(theta*pi/180.0_dp)-&
-        (Vinf*velyy+velwy)*cos(theta*pi/180.0_dp)
-        Vt = rotdir*((Vinf*(1.0_dp+velxx)+velwx)*cos(theta*pi/180.0_dp)+&
-        (Vinf*velyy+velwy)*sin(theta*pi/180.0_dp))+rot*rad
+        Vn = (Vinf*(1.0_dp+velxx)+velwx)*sin(theta)-&
+        (Vinf*velyy+velwy)*cos(theta)
+        Vt = rotdir*((Vinf*(1.0_dp+velxx)+velwx)*cos(theta)+&
+        (Vinf*velyy+velwy)*sin(theta))+abs(rot)*rad
         ! Calculating total velocity component
         V = sqrt(Vn**2+Vt**2)
 
@@ -1045,7 +1080,7 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
     end do
 
     ! Correcting with A-weighting
-    SPLf(1:nf) = SPLf(1:nf) + AdB(1:nf)
+    SPLf(1:nf) = SPLf(1:nf)+AdB(1:nf)
 
     ! Adding SPLs for each rotation increment
     SPLoa_d(di) = 10.0_dp*log10(sum(10.0_dp**(SPLf/10.0_dp)))

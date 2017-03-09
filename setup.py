@@ -27,7 +27,7 @@ setup(
 
 setup(
     name='bpmvawtacoustic',
-    version='1.1.0',
+    version='1.2.0',
     package_dir={'': 'acoustic_model'},
     ext_modules=[Extension('_bpmvawtacoustic', ['acoustic_model/BPM_VAWT_Acoustic_Model.f90'], extra_compile_args=['-O2'])],
 )
