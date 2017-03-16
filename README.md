@@ -41,7 +41,8 @@ python <\your\path\to\f2py.py> -c --opt=-O2 --compiler=mingw32 --fcompiler=gfort
 
 This python code can be run from another file using:
 ```python
-SPL_HAWT = _bpmacoustic.turbinepos(turbx, turby, obs, winddir, windvel, rpm, B, h, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr)
+SPL_HAWT = _bpmacoustic.turbinepos(turbx, turby, obs, winddir, windvel, rpm, B, h, rad,\
+c, c1, alpha, nu, c0, psi, AR, noise_corr)
 """
 Calculating the sound pressure level for a HAWT
 
@@ -88,7 +89,8 @@ SPL_HAWT : float
     sound pressure level calculated at observer location (dB)
 """
 
-SPL_VAWT = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, obs, winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, velx, vely, wakex, wakey)
+SPL_VAWT = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, obs, winddir, B, Hub,\
+high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, velx, vely, wakex, wakey)
 """
 Calculating the sound pressure level for a VAWT
 

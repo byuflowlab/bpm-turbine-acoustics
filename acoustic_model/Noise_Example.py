@@ -120,9 +120,9 @@ import numpy as np
 from numpy import sin,cos,pi
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import time,sys
 from matplotlib import rcParams
 rcParams['font.family'] = 'Times New Roman'
-import time,sys
 
 import _bpmacoustic
 import _bpmvawtacoustic
