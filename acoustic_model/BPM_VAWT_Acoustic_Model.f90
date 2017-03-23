@@ -933,7 +933,7 @@ end subroutine TEBVSfunc
 
 ! Computing the overall sound pressure level (OASPL) of a turbine defined below (in dB)
 subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
-  rot,Vinf,velx,vely,wakex,wakey,SPLoa)
+  rot,Vinf,wakex,wakey,SPLoa)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
@@ -941,12 +941,12 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
   real(dp), intent(in) :: ox,oy,oz,Hub,rad,nu,c0,psi,AR,rot,Vinf
   real(dp), dimension(n), intent(in) :: high
   real(dp), dimension(n-1), intent(in) :: c,c1,alpha
-  real(dp), dimension(p), intent(in) :: velx,vely,wakex,wakey
+  real(dp), dimension(p), intent(in) :: wakex,wakey
   ! out
   real(dp), intent(out) :: SPLoa
   ! local
   integer :: nf,bf,i,j,k,bi,di
-  real(dp) :: pi,atip1,atip2,B_int,theta,V,Vn,Vt,velxx,velyy,velwx,velwy,rotdir
+  real(dp) :: pi,atip1,atip2,rotdir,B_int,theta,velwx,velwy,Vx,Vy,V
   real(dp) :: TBLTE,TBLTV,LBLVS,TEBVS
   real(dp), dimension(n-1) :: L,highmid,h,r,theta_e,phi_e
   real(dp), dimension((n-1)*B) :: TE_t,BLVS_t,BVS_t
@@ -1022,24 +1022,16 @@ subroutine OASPL(n,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,AR,&
         r,theta_e,phi_e)
 
         if ((theta >= theta_vel(1)) .and. (theta <= theta_vel(p))) then
-          call splineint(p,theta_vel,velx,theta,velxx)
-          call splineint(p,theta_vel,vely,theta,velyy)
           call splineint(p,theta_vel,wakex,theta,velwx)
           call splineint(p,theta_vel,wakey,theta,velwy)
         else
-          velxx = (velx(1)+velx(p))/2.0_dp
-          velyy = (vely(1)+vely(p))/2.0_dp
           velwx = (wakex(1)+wakex(p))/2.0_dp
           velwy = (wakey(1)+wakey(p))/2.0_dp
         end if
 
-        ! Calculating normal and tangential velocity components over the blades
-        Vn = (Vinf*(1.0_dp+velxx)+velwx)*sin(theta)-&
-        (Vinf*velyy+velwy)*cos(theta)
-        Vt = rotdir*((Vinf*(1.0_dp+velxx)+velwx)*cos(theta)+&
-        (Vinf*velyy+velwy)*sin(theta))+abs(rot)*rad
-        ! Calculating total velocity component
-        V = sqrt(Vn**2+Vt**2)
+        Vx = rot*rad*cos(theta) + Vinf + velwx
+        Vy = rot*rad*sin(theta) + velwy
+        V = sqrt(Vx**2 + Vy**2)
 
         call TBLTVfunc(f(j),V,c(1),r(1),theta_e(1),phi_e(1),atip1,c0,&
         tipflat,AR,TBLTV)
@@ -1098,7 +1090,7 @@ end subroutine OASPL
 
 ! Placing a turbine in a specified location and finding the OASPL of the turbine with reference to an observer
 subroutine turbinepos(nturb,nseg,nobs,p,x,y,obs,winddir,B,Hub,high,&
-  rad,c,c1,alpha,nu,c0,psi,AR,noise_corr,rot,Vinf,velx,vely,wakex,wakey,SPL_obs)
+  rad,c,c1,alpha,nu,c0,psi,AR,noise_corr,rot,Vinf,wakex,wakey,SPL_obs)
   implicit none
   integer, parameter :: dp = kind(0.d0)
   ! in
@@ -1108,14 +1100,14 @@ subroutine turbinepos(nturb,nseg,nobs,p,x,y,obs,winddir,B,Hub,high,&
   real(dp), dimension(nobs), intent(in) :: obs
   real(dp), dimension(nseg), intent(in) :: high
   real(dp), dimension(nseg-1), intent(in) :: c,c1,alpha
-  real(dp), dimension(p*nturb), intent(in) :: velx,vely,wakex,wakey
+  real(dp), dimension(p*nturb), intent(in) :: wakex,wakey
   ! out
   real(dp), intent(out) :: SPL_obs
   ! local
   integer :: i,j,k
   real(dp) :: pi,windrad,ox,oy,oz,rxy,ang
   real(dp), dimension(nturb) :: tSPL
-  real(dp), dimension(p) :: velxd,velyd,wakexd,wakeyd
+  real(dp), dimension(p) :: wakexd,wakeyd
   intrinsic sqrt
   intrinsic sin
   intrinsic cos
@@ -1142,15 +1134,13 @@ subroutine turbinepos(nturb,nseg,nobs,p,x,y,obs,winddir,B,Hub,high,&
 
     do j = 1,p
       k = p*(i-1)+j
-      velxd(j) = velx(k)
-      velyd(j) = vely(k)
       wakexd(j) = wakex(k)
       wakeyd(j) = wakey(k)
     end do
 
     ! Calculating the overall SPL of each of the turbines at the observer location
     call OASPL(nseg,p,ox,oy,oz,B,Hub,high,rad,c,c1,alpha,nu,c0,psi,&
-    AR,rot(i),Vinf,velxd,velyd,wakexd,wakeyd,tSPL(i))
+    AR,rot(i),Vinf,wakexd,wakeyd,tSPL(i))
 
   end do
 
