@@ -49,10 +49,10 @@ REQUIRED PYTHON LIBRARIES:
     ($ pip install numpy --upgrade)  
 
 
-## Installation instructions Marylou  
+## Installation instructions Marylou (BYU Supercomputer)
 ### module dependencies ($ module load <module name>)(purge all modules first)  
     petsc/3.6.3  
-    python2/7  
+    python/2/7  
     compiler_gnu/4.9.2  
     mpi/openmpi-1.8.4_gnu-4.9.2  
 ### python dependencies ($ pip install --user <package name>)  

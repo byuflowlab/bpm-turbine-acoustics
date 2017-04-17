@@ -4,15 +4,14 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='BPM_Acoustic_Model',
+    name='bpmacoustic',
     version='1.2.0',
     description='BPM acoustic model for turbine noise prediction',
     author='Eric B. Tingey',
     author_email='ebtingey@byu.edu',
     url='https://github.com/byuflowlab/bpm-turbine-acoustics',
     package_dir={'': 'acoustic_model'},
-    packages=['data'],
-    py_modules=['BPM_Acoustic_Model'],
+    py_modules=['bpmacoustic'],
     license='MIT License',
     zip_safe=False
 )
