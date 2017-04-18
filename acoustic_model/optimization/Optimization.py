@@ -176,7 +176,7 @@ def obj_func(xdict):
     global generator_efficiency
     global yaw
     global rho
-    global velf
+    global Vinf
     global windroseDirections
     global windFrequencies
     global powercurve
@@ -219,7 +219,7 @@ def obj_func(xdict):
         yw = x*sin(-windDirectionRad) + y*cos(-windDirectionRad)
 
         # Effective velocity in front of each turbine and power from each turbines
-        veleff[d], _, power = floris_power(xw, yw, rotorDiameter, velf, rho, generator_efficiency, yaw[d], rpmw[d], powercurve)
+        veleff[d], _, power = floris_power(xw, yw, rotorDiameter, Vinf, rho, generator_efficiency, yaw[d], rpmw[d], powercurve)
         power_dir[d] = power*windFrequencies[d] # multiplying power by probability in that wind direction
     APP = sum(power_dir) # average power production
 
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     global power_corr
     global yaw
     global rho
-    global velf
+    global Vinf
     global windroseDirections
     global windFrequencies
     global powercurve
@@ -285,7 +285,7 @@ if __name__ == "__main__":
         rotor_diameter = 90. # diameter of turbine (m)
         rpm_max = 16.1 # maximum rotation rate (RPM)
         rpm_min = 0.#10.3 # minimum rotation rate (RPM)
-        velf = 14. # free stream velocity (m/s)
+        Vinf = 14. # free stream velocity (m/s)
         chord_corr = 1.645615 # correction factor for chord length
         power_corr = 1.842414141559 # correction factor for maximum power production
         power_max = 2500. # maximum power production of a single turbine (Nordex N90-2.5MW; kW)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
         rotor_diameter = 47. # diameter of turbine (m)
         rpm_max = 28.5 # maximum rotation rate (RPM)
         rpm_min = 0.#18. # minimum rotation rate (RPM)
-        velf = 15. # free stream velocity (m/s)
+        Vinf = 15. # free stream velocity (m/s)
         chord_corr = 2.190491 # correction factor for chord length
         power_corr = 2.08647545446 # correction factor for maximum power production
         power_max = 660. # maximum power production of a single turbine (Vestas V47-660kW; kW)
@@ -386,7 +386,7 @@ if __name__ == "__main__":
     aeroanalysis = CCBlade(rad, c, alpha, af, Rhub, Rtip, blade, rho, mu, precone, tilt, yaw, shearExp, hubHt, nSector)
 
     tsr = np.linspace(0,20,100) # tip-speed ratio
-    Uinf = velf*np.ones_like(tsr) # free stream wind speed
+    Uinf = Vinf*np.ones_like(tsr) # free stream wind speed
     Omega = ((Uinf*tsr)/Rtip)*(30./np.pi) # rotation rate (rad/s)
     pitch = np.ones_like(tsr)*0. # pitch (deg)
 

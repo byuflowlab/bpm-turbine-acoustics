@@ -90,7 +90,7 @@ SPL_HAWT : float
 """
 
 SPL_VAWT = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, obs, winddir, B, Hub,\
-high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, wakex, wakey)
+high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, Vinf, wakex, wakey)
 """
 Calculating the sound pressure level for a VAWT
 
@@ -132,7 +132,7 @@ noise_corr : float
     correction factor for SPL calculations (1=none, use if calculations differ from expected)
 rot : array
     rotation rate of each turbine (rad/s)
-velf : float
+Vinf : float
     free stream wind speed (m/s)
 wakex : array
     the wake influenced x-velcoity of the turbine at each point along the blade flight path (m/s)

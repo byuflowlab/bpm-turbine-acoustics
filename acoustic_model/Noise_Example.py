@@ -58,7 +58,7 @@ SPL_HAWT : float
     sound pressure level calculated at observer location (dB)
 
 
-SPL_VAWT = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, obs, winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, velx, vely, wakex, wakey)
+SPL_VAWT = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, obs, winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, Vinf, velx, vely, wakex, wakey)
 Calculating the sound pressure level for a VAWT
 
 Parameters
@@ -99,7 +99,7 @@ noise_corr : float
     correction factor for SPL calculations (1=none, use if calculations differ from expected)
 rot : array
     rotation rate of each turbine (rad/s)
-velf : float
+Vinf : float
     free stream wind speed (m/s)
 velx : array
     the self-induced x-velocity of the turbine at each point along blade flight path (m/s)
@@ -298,11 +298,11 @@ if plot_dist == True:
 
         turbx = np.array([0.]) # turbine x-positions (m)
         turby = np.array([0.]) # turbine y-positions (m)
-        velf = 8. # free stream wind speed (m/s)
+        Vinf = 8. # free stream wind speed (m/s)
         dia = 1.2 # turbine diameter (m)
         rad = dia/2. # turbine radius (m)
         tsrd = 2.625 # tip-speed ratio
-        rot = np.ones_like(turbx)*tsrd*velf/rad # turbine rotation rates (rad/s)
+        rot = np.ones_like(turbx)*tsrd*Vinf/rad # turbine rotation rates (rad/s)
 
         winddir = 180. # wind direction (deg)
 
@@ -339,7 +339,7 @@ if plot_dist == True:
         for i in range(n):
             for j in range(n):
                 time0 = time.time()
-                F[i,j] = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, np.array([X[i,j],Y[i,j],0.]), winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, velf, wakex, wakey)
+                F[i,j] = _bpmvawtacoustic.turbinepos(ntheta, turbx, turby, np.array([X[i,j],Y[i,j],0.]), winddir, B, Hub, high, rad, c, c1, alpha, nu, c0, psi, AR, noise_corr, rot, Vinf, wakex, wakey)
                 point += 1
                 runtime = time.time()-time0
                 progress_bar(float(point)/(n*n),n*n,runtime)
