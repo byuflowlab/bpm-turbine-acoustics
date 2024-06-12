@@ -1,4 +1,6 @@
-# BPM Turbine Acoustics
+# BPM Turbine Acoustics (Archived)
+
+THIS CODE HAS BEEN SUPERSEDED by [BPM.jl](https://github.com/byuflowlab/BPM.jl)
 
 Turbine acoustic code using the BPM equations developed by Brooks, Pope, and Marcolini
 
